@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>绣坊协同 · 数据重置</title>
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#ded7c7;color:#3b2b20;padding:22px;}
+  .card{max-width:430px;margin:0 auto;background:#fff;border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.08);}
+  h1{font-size:20px;margin:0 0 6px;}
+  p{font-size:14px;line-height:1.6;color:#6b5b4b;margin:0 0 12px;}
+  .stat{background:#f5f0e6;border-radius:10px;padding:12px;margin:14px 0;font-size:14px;line-height:1.5;}
+  button{width:100%;border:0;border-radius:12px;padding:15px;font-size:16px;font-weight:600;margin-top:10px;}
+  .danger{background:#b4463b;color:#fff;}
+  .ghost{background:#efe8da;color:#3b2b20;}
+  a{display:block;text-align:center;margin-top:18px;color:#2f5754;font-size:14px;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>数据重置</h1>
+  <p>只重置<strong>当前这台设备当前浏览器</strong>里的数据，不影响电脑或其他手机。</p>
+  <div class="stat" id="stat">读取中…</div>
+  <button class="danger" onclick="clearBiz()">清空业务数据（保留人员）</button>
+  <button class="ghost" onclick="restoreDemo()">恢复出厂演示数据</button>
+  <a href="./index.html">返回应用</a>
+</div>
+<script>
+var KEY = 'embroidery_app_v1';
+function read(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+function stat(){
+  var d = read();
+  document.getElementById('stat').innerHTML = d
+    ? '当前：订单 ' + d.orders.length + ' 单 · 留痕 ' + d.logs.length + ' 条 · 人员 ' + d.users.length + ' 人'
+    : '当前：暂无数据（打开应用后会自动生成演示数据）';
+}
+function clearBiz(){
+  var d = read();
+  if(!d){ alert('当前没有数据，无需清空'); return; }
+  if(!confirm('确定清空业务数据？将删除订单、留痕、异常、代操作、照片、付款记录；人员和身份设置保留。不可恢复。')) return;
+  d.orders=[]; d.logs=[]; d.exceptions=[]; d.proxyOps=[]; d.photos=[]; d.payments=[];
+  d.seq={all:0,order:1};
+  localStorage.setItem(KEY, JSON.stringify(d));
+  alert('已清空，即将打开应用');
+  location.replace('./index.html?r=' + Date.now());
+}
+function restoreDemo(){
+  if(!confirm('确定恢复出厂演示数据？当前订单、人员修改、留痕都会被初始演示数据覆盖，不可恢复。')) return;
+  localStorage.setItem('xiufang_reset_seed','1');
+  location.replace('./index.html?r=' + Date.now());
+}
+stat();
+</script>
+</body>
+</html>

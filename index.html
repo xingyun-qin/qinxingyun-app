@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#2f5754">
+<meta name="description" content="绣坊协同 · 绣品生产派单与工费结算，数据仅存本机浏览器">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<title>绣坊协同 · 绣品生产派单</title>
+<style>
+:root{
+  --ink:#2f3b3a; --jade:#2f5754; --jade2:#3f6f69; --cinnabar:#9c3535; --gold:#b6873c;
+  --paper:#f7f3ea; --line:#e6ddcb; --muted:#8a8172; --white:#fffdf8;
+  --red:#c0392b; --amber:#c47f17; --green:#2e7d5b; --blue:#3b6fa8; --purple:#7356a8;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{background:#ded7c7;background-image:radial-gradient(circle at 20% 10%,#efe8d8,transparent 60%),radial-gradient(circle at 80% 90%,#d8cdb8,transparent 55%);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.phone{width:min(420px,100vw);height:min(880px,100vh);background:var(--paper);border-radius:26px;box-shadow:0 24px 70px rgba(40,35,25,.35),0 0 0 8px #2b2b2b,0 0 0 10px #4a4a4a;display:flex;flex-direction:column;overflow:hidden;position:relative}
+@media(max-width:430px){.phone{width:100vw;height:100vh;border-radius:0;box-shadow:none}}
+.statusbar{height:26px;flex:none;background:var(--jade);color:#e9e2cf;font-size:11px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;letter-spacing:.4px}
+.appbar{height:62px;flex:none;background:linear-gradient(135deg,var(--jade),var(--jade2));color:#fff8e8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-shadow:0 2px 10px rgba(20,40,35,.18);z-index:2}
+.appbar-title{font-size:17px;font-weight:700;letter-spacing:1px}
+.appbar-sub{font-size:11px;opacity:.78;margin-top:2px}
+.appbar-right{display:flex;gap:8px;align-items:center}
+.iconbtn{position:relative;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff8e8;border-radius:18px;padding:6px 10px;font-size:12px;cursor:pointer;display:flex;gap:4px;align-items:center}
+.iconbtn:active{transform:scale(.96)}
+.dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#ff5b52;border:1.5px solid #fff}
+.hidden{display:none!important}
+main{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 12px 84px;scrollbar-width:thin}
+main::-webkit-scrollbar{width:4px}main::-webkit-scrollbar-thumb{background:#c9bfa9;border-radius:4px}
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:66px;background:var(--white);border-top:1px solid var(--line);display:flex;box-shadow:0 -3px 14px rgba(60,50,30,.07);z-index:3;padding-bottom:env(safe-area-inset-bottom)}
+.tab{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;color:var(--muted);cursor:pointer}
+.tab .ic{font-size:19px;line-height:1;filter:grayscale(.65)}
+.tab.on{color:var(--cinnabar);font-weight:700}
+.tab.on .ic{filter:none;transform:translateY(-1px)}
+.card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(80,65,40,.05)}
+.card.tight{padding:10px 12px}
+.cardTitle{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.oid{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--muted);letter-spacing:.3px}
+.name{font-size:15px;font-weight:700;margin:3px 0 5px}
+.meta{font-size:12px;color:var(--muted);line-height:1.65}
+.meta b{color:var(--ink);font-weight:600}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chip{display:inline-block;font-size:10.5px;padding:3px 8px;border-radius:20px;font-weight:700;white-space:nowrap}
+.chip.gray{background:#eee9df;color:#7a7263}.chip.blue{background:#e6eefb;color:var(--blue)}
+.chip.purple{background:#efe9fa;color:var(--purple)}.chip.teal{background:#e0f0ec;color:var(--jade)}
+.chip.amber{background:#fdf0da;color:var(--amber)}.chip.red{background:#fbe6e2;color:var(--red)}
+.chip.green{background:#e2f2e9;color:var(--green)}.chip.done{background:#eae7de;color:#6f6a5e}
+.chip.outline{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.cd{font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.cd.over{color:var(--red)}.cd.warn{color:var(--cinnabar)}.cd.near{color:var(--amber)}.cd.ok{color:var(--muted)}
+.cd.done{color:var(--green)}
+.btn{border:0;border-radius:10px;background:var(--cinnabar);color:#fff8f0;font-size:13px;font-weight:700;padding:10px 14px;cursor:pointer;letter-spacing:.3px}
+.btn:active{transform:scale(.98)}
+.btn.block{display:block;width:100%;margin-top:14px;padding:12px}
+.btn.ghost{background:#f3ecdd;color:var(--jade);border:1px solid var(--line)}
+.btn.mini{padding:6px 10px;font-size:11.5px;border-radius:8px;background:#f3ecdd;color:var(--jade);border:1px solid var(--line);font-weight:600}
+.btn.mini.pri{background:var(--jade);color:#fff;border-color:var(--jade)}
+.btn.mini.danger{background:#fbe9e5;color:var(--red);border-color:#f0d3cc}
+.btn.mini.gold{background:#f8eed8;color:#8a631f;border-color:#ecdcb8}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sec{font-size:12px;font-weight:800;color:var(--jade);letter-spacing:1px;margin:16px 2px 8px;display:flex;align-items:center;gap:6px}
+.sec:before{content:"";width:3px;height:13px;background:var(--cinnabar);border-radius:2px}
+.sec .num{font-weight:500;color:var(--muted);font-size:11px}
+.foldhead{cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:4px}
+.foldhead .arw{display:inline-block;font-size:9px;color:var(--muted);transition:transform .18s}
+.foldhead.open .arw{transform:rotate(90deg)}
+.foldbody{overflow:hidden}
+.foldbody.hide{display:none}
+.stats{display:flex;gap:8px}
+.stat{flex:1;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center}
+.stat .n{font-size:19px;font-weight:800;color:var(--cinnabar);line-height:1.2}
+.stat .l{font-size:10.5px;color:var(--muted);margin-top:3px}
+.banner{border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:10px;border:1px solid}
+.banner.warn{background:#fdf0da;border-color:#f0d9ab;color:#8a5a12}
+.banner.red{background:#fbe6e2;border-color:#f0cdc5;color:#9c3535}
+.banner.info{background:#e8f0ee;border-color:#cfe0db;color:var(--jade)}
+.banner.green{background:#e6f3eb;border-color:#c9e4d3;color:var(--green)}
+.empty{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 10px;line-height:1.8}
+.empty .e{font-size:28px;display:block;margin-bottom:6px;opacity:.6}
+.tline{border-left:2px solid var(--line);margin-left:5px;padding-left:12px}
+.titem{position:relative;font-size:11.5px;color:var(--muted);padding:0 0 10px;line-height:1.55}
+.titem:before{content:"";position:absolute;left:-17px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--gold);border:2px solid var(--paper)}
+.titem b{color:var(--ink)}
+.mask{position:absolute;inset:0;background:rgba(30,26,18,.45);z-index:10;display:flex;align-items:flex-end}
+.sheet{width:100%;max-height:86%;background:var(--paper);border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:up .18s ease-out;box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+@keyframes up{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
+.sheet-head{flex:none;display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--line);font-size:15px;color:var(--jade)}
+.sheet-head button{border:0;background:#ece4d3;width:28px;height:28px;border-radius:50%;font-size:13px;color:var(--muted);cursor:pointer}
+.sheet-body{overflow-y:auto;padding:12px 16px calc(18px + env(safe-area-inset-bottom))}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--jade);margin-bottom:5px}
+.field label em{color:var(--cinnabar);font-style:normal}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:var(--white);border-radius:9px;padding:10px;font-size:13.5px;color:var(--ink);font-family:inherit;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);box-shadow:0 0 0 2px #f0e3c6}
+.field .invalid{border-color:var(--red)!important;box-shadow:0 0 0 2px #f6d5ce!important;background:#fff8f6!important}
+.field textarea{resize:vertical;line-height:1.6}
+.field input[type=file]{padding:8px;font-size:12px}
+.help{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+.info{background:#eee7d7;border:1px dashed #d8c9a9;border-radius:10px;padding:10px;font-size:12px;line-height:1.7;color:#5c523f;margin-bottom:12px}
+.info b{color:var(--cinnabar)}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.kv:last-child{border:0}.kv span:first-child{color:var(--muted);flex:none}.kv span:last-child{text-align:right;font-weight:600}
+.logitem{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin-bottom:7px;font-size:11.5px;line-height:1.6}
+.logitem .lh{display:flex;justify-content:space-between;gap:6px;color:var(--muted);font-size:10.5px}
+.logitem .lh b{color:var(--jade)}
+.logitem .ld{margin-top:3px;color:var(--ink)}
+.logitem .lx{margin-top:4px;background:#f5efe2;border-radius:6px;padding:5px 7px;color:#7a6a4c;font-size:10.5px}
+.filters{display:flex;gap:6px;margin-bottom:10px}
+.filters input,.filters select{flex:1;min-width:0;border:1px solid var(--line);background:var(--white);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;color:var(--ink)}
+.thumb{width:100%;border-radius:10px;display:block;border:1px solid var(--line)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rolegrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.rolebtn{border:1px solid var(--line);background:var(--white);border-radius:12px;padding:12px 4px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--muted)}
+.rolebtn .ri{font-size:22px;display:block;margin-bottom:5px}
+.rolebtn.on{border-color:var(--cinnabar);background:#fdf1ec;color:var(--cinnabar)}
+.notice{font-size:11px;color:var(--muted);line-height:1.7}
+.divider{height:1px;background:var(--line);margin:12px 0}
+.badge{font-size:10px;background:var(--cinnabar);color:#fff;border-radius:10px;padding:1px 6px;margin-left:4px}
+.toast{position:absolute;top:104px;left:50%;transform:translateX(-50%) translateY(-8px);background:rgba(38,45,42,.96);font-weight:600;color:#fff8e8;padding:10px 16px;border-radius:20px;font-size:12.5px;z-index:20;opacity:0;pointer-events:none;transition:.22s;max-width:88%;text-align:center;line-height:1.5;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:#9c3535}
+.foot{text-align:center;font-size:10.5px;color:#a99f8c;padding:8px 0 4px;line-height:1.7}
+.tagline{display:inline-block;background:#f1ead9;border-radius:6px;padding:2px 6px;font-size:10.5px;color:#7a6a4c;margin:2px 4px 0 0}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"><span id="clock">--:--</span><span>绣坊协同 · 本地版</span><span>📶 &nbsp;🔋</span></div>
+  <header class="appbar">
+    <div><div class="appbar-title" id="barTitle">工作台</div><div class="appbar-sub" id="barSub"></div></div>
+    <div class="appbar-right">
+      <button class="iconbtn" data-act="openRole">👤 <span id="roleBadge">管理员</span></button>
+      <button class="iconbtn" data-act="openRemind">🔔<i id="remindDot" class="dot hidden"></i></button>
+    </div>
+  </header>
+  <main id="view"></main>
+  <nav id="tabbar" class="tabbar"></nav>
+</div>
+<div id="mask" class="mask hidden">
+  <div class="sheet">
+    <div class="sheet-head"><b id="sheetTitle"></b><button data-act="closeSheet">✕</button></div>
+    <div id="sheetBody" class="sheet-body"></div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+'use strict';
+/* ============================ 基础工具 ============================ */
+var KEY='embroidery_app_v1';
+var ROLE_NAME={admin:'管理员',tracker:'跟单员',embroiderer:'绣娘'};
+var STATUS={
+  pending_assign:{t:'待派单',c:'gray'},   assigned:{t:'待接单',c:'blue'},
+  accepted:{t:'已接单·待发料',c:'blue'}, material_sent:{t:'已发料·待收料',c:'purple'},
+  material_received:{t:'已收料·待领料',c:'purple'}, producing:{t:'生产中',c:'teal'},
+  returned:{t:'已交回·待回收',c:'amber'}, recovered:{t:'已回收·待质检',c:'amber'},
+  rework:{t:'返工中',c:'red'}, passed:{t:'质检通过·待结算',c:'green'}, settled:{t:'已结算',c:'done'}
+};
+var ACTION_NAME={accept:'接单',confirmMaterial:'确认领料',returnGoods:'交回登记'};
+var db=null;
+var ui={tab:'home',logQuery:'',logRole:'all',logOrder:'all',adminFilter:'all',flashId:'',userFold:true,orderFold:true,settleOpen:{}};
+var sheetState={onSubmit:null,onChange:null,required:[]};
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pad(n){return String(n).padStart(2,'0');}
+function nowISO(){return new Date().toISOString();}
+function fmt(ts){var d=new Date(ts);if(isNaN(d.getTime()))return String(ts||'—');return pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());}
+function fmtFull(ts){var d=new Date(ts);if(isNaN(d.getTime()))return String(ts||'—');return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());}
+function dtLocal(d){d=d||new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());}
+function hoursLater(h){return dtLocal(new Date(Date.now()+h*3600000));}
+function toCents(n){var v=Number(n);return isFinite(v)?Math.round(v*100):0;}
+function yuan(c){return (Math.round(Number(c)||0)/100);}
+function numVal(v,def){return (v===''||v==null)?def:(isFinite(Number(v))?Number(v):def);}
+function money(n){var c=toCents(n),neg=c<0,a=Math.abs(c);return '¥'+(neg?'-':'')+Math.floor(a/100)+'.'+pad(a%100);}
+function uid(p){db.seq.all=(db.seq.all||0)+1;return p+Date.now().toString(36).toUpperCase()+pad(db.seq.all%100);}
+function assert(c,m){if(!c)throw new Error(m||'当前状态不允许此操作');}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){toast('本地空间不足，请到「留痕」导出数据后重置','err');}}
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw){var d=JSON.parse(raw);if(d&&d.orders){
+    d.seq=d.seq||{all:0,order:1};d.settings=d.settings||{role:'admin',trackerId:'T01',embroidererId:'E01'};
+    d.users=d.users||[];d.logs=d.logs||[];d.exceptions=d.exceptions||[];d.proxyOps=d.proxyOps||[];d.photos=d.photos||[];d.payments=d.payments||[];
+    d.orders.forEach(function(o){o.history=o.history||[];o.qcRecords=o.qcRecords||[];o.pendingProxy=o.pendingProxy||[];});
+    return d;
+  }}}catch(e){}return null;
+}
+function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type==='err'?' err':'');clearTimeout(t._tm);t._tm=setTimeout(function(){t.className='toast';},2400);}
+function $(s){return document.querySelector(s);}
+
+function cd(iso){
+  var ms=new Date(iso).getTime()-Date.now(),a=Math.abs(ms);
+  var h=Math.floor(a/3600000),m=Math.floor(a%3600000/60000),s=Math.floor(a%60000/1000);
+  var txt=(ms<0?'逾期 ':(h>=24?'剩余 ':'剩余 '))+(h>=24?Math.floor(h/24)+'天'+pad(h%24)+'时':(h?h+'时':'')+m+'分'+(h?'':s+'秒'));
+  var lv=ms<0?'over':ms<24*3600000?'warn':ms<48*3600000?'near':'ok';
+  return {text:txt,level:lv,ms:ms};
+}
+function cdHtml(iso,done){if(done)return '<span class="cd done">已完结</span>';var c=cd(iso);return '<span class="cd '+c.level+'" data-cd="'+esc(iso)+'">'+c.text+'</span>';}
+function chip(st){var s=STATUS[st]||{t:st,c:'gray'};return '<span class="chip '+s.c+'">'+esc(s.t)+'</span>';}
+function user(id){return db.users.find(function(u){return u.id===id;})||{id:id,name:'未指派',role:'embroiderer'};}
+function uname(id){return id?user(id).name:'未指派';}
+function findOrder(id){return db.orders.find(function(o){return o.id===id;});}
+function activeOrders(){return db.orders.filter(function(o){return o.status!=='settled';});}
+function myOrders(){return db.orders.filter(function(o){return o.assignedTo===db.settings.embroidererId;});}
+function actor(){var r=db.settings.role,id=r==='admin'?'A01':(r==='tracker'?db.settings.trackerId:db.settings.embroidererId);var u=user(id);return {id:u.id,name:u.name,role:r};}
+function addLog(action,orderId,detail,extra,who){var a=who||actor();db.logs.unshift({id:uid('L'),ts:nowISO(),action:action,orderId:orderId||'',detail:detail,role:a.role||db.settings.role,roleName:ROLE_NAME[a.role||db.settings.role]||'',actor:a.name,extra:extra||null});}
+function step(o,action,detail,by){o.history=o.history||[];o.history.push({ts:nowISO(),action:action,detail:detail,by:by||actor().name});}
+function paidFor(orderId){return yuan((db.payments||[]).filter(function(p){return p.orderId===orderId;}).reduce(function(s,p){return s+toCents(p.amount);},0));}
+function wageOf(o){var due=o.settlement?yuan(toCents(o.settlement.amount)):0,paid=paidFor(o.id);return {due:due,paid:paid,left:yuan(Math.max(0,toCents(due)-toCents(paid)))};}
+function wageSummary(embroidererId){
+  var list=db.orders.filter(function(o){return o.status==='settled'&&o.assignedTo===embroidererId&&o.settlement;});
+  var dueC=0,paidC=0;list.forEach(function(o){var w=wageOf(o);dueC+=toCents(w.due);paidC+=toCents(w.paid);});
+  return {orders:list,due:yuan(dueC),paid:yuan(paidC),left:yuan(Math.max(0,dueC-paidC))};
+}
+
+/* ============================ 演示数据 ============================ */
+function seed(){
+  var d=new Date(),ymd=''+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
+  var s={version:1,seq:{all:0,order:10},settings:{role:'admin',trackerId:'T01',embroidererId:'E01'},
+    users:[
+      {id:'A01',name:'沈总管',role:'admin'},
+      {id:'T01',name:'小周',role:'tracker'},{id:'T02',name:'阿岚',role:'tracker'},
+      {id:'E01',name:'苏绣娘',role:'embroiderer'},{id:'E02',name:'阿绣',role:'embroiderer'},{id:'E03',name:'林姐',role:'embroiderer'}
+    ],orders:[],logs:[],exceptions:[],proxyOps:[],photos:[],payments:[]};
+  function O(n,title,pattern,qty,needle,deadlineH,unit,material,assignedTo,status,extra){
+    var id='XP'+ymd+pad(n);
+    var o=Object.assign({id:id,title:title,pattern:pattern,qty:qty,needle:needle,deadline:hoursLater(deadlineH),unitPrice:unit,material:material,assignedTo:assignedTo||'',status:status,createdAt:nowISO(),history:[],qcRecords:[],reworkCount:0,pendingProxy:[],progress:0},extra||{});
+    o.history.push({ts:nowISO(),action:'建单',detail:'绣品单创建 · '+title,by:'沈总管'});
+    return o;
+  }
+  s.orders=[
+    O(1,'并蒂莲团扇','双面绣·团扇',6,'套针/抢针',9,86,'真丝线 12 色、湘妃竹扇骨 6 副','E01','settled',{materialInfo:{detail:'真丝线 12 色、湘妃竹扇骨 6 副',batch:'FL'+ymd+'01',by:'沈总管',ts:nowISO()},receiveInfo:{by:'小周',ts:nowISO(),scanCode:'SM'+ymd+'001'},progress:100,passQty:6,qcRecords:[{result:'pass',qty:6,note:'双面针法平整，配色雅致',by:'沈总管',ts:nowISO()}],settlement:{qty:6,unitPrice:86,deduct:0,bonus:20,amount:536,by:'沈总管',ts:nowISO()}}),
+    O(2,'百鸟朝凤屏','单面绣·挂屏',2,'平针/施针',30,420,'金线、孔雀羽线、软缎底料','E02','material_sent',{materialInfo:{detail:'金线、孔雀羽线、软缎底料',batch:'FL'+ymd+'02',by:'沈总管',ts:nowISO()}}),
+    O(3,'双面绣猫','双面异色绣',3,'乱针/虚实针',50,260,'白绢、灰系丝线 20 色','E01','returned',{returnInfo:{qty:3,note:'绣娘电话委托代登记，已按花样完成',ts:nowISO(),by:'小周（代操作）'}}),
+    O(4,'牡丹手帕','手帕小件',12,'打籽针',80,38,'素绉缎手帕 12 方、红粉丝线','E03','recovered',{recoverInfo:{qty:12,note:'外观初检无破损',by:'沈总管',ts:nowISO()}}),
+    O(5,'山水条幅','水墨写意',1,'乱针',120,680,'生宣底、墨色丝线 8 色','E02','passed',{passQty:1,qcRecords:[{result:'pass',qty:1,note:'针脚均匀，墨韵层次达标',by:'沈总管',ts:nowISO()}]}),
+    O(6,'福字挂饰','节庆小件',20,'平针/盘金',-6,26,'红绒布、盘金线','E03','settled',{passQty:20,reworkCount:1,qcRecords:[{result:'rework',qty:0,note:'首检金线松紧不一',defect:'盘金不匀',by:'沈总管',ts:nowISO()},{result:'pass',qty:20,note:'返工后复检通过',by:'沈总管',ts:nowISO()}],settlement:{qty:20,unitPrice:26,deduct:10,bonus:20,amount:530,by:'沈总管',ts:nowISO()}}),
+    O(7,'蝶恋花香囊','香囊小件',15,'戳纱/纳纱',20,32,'纱底、彩线、香料内芯','', 'pending_assign'),
+    O(8,'金鱼荷包','荷包小件',8,'套针',-2,45,'湖蓝软缎、金葱线','E03','assigned'),
+    O(9,'牡丹屏风','双面绣·屏风',4,'乱针/施针',40,360,'素绉缎底、真丝线 16 色','E01','producing',{materialInfo:{detail:'素绉缎底、真丝线 16 色',batch:'FL'+ymd+'09',by:'沈总管',ts:nowISO()},receiveInfo:{by:'小周',ts:nowISO(),scanCode:'SM'+ymd+'009'},progress:45})
+  ];
+  s.payments=[
+    {id:'PY'+ymd+'01',orderId:'XP'+ymd+pad(6),embroidererId:'E03',amount:200,by:'沈总管',ts:nowISO(),note:'预支部分工费'},
+    {id:'PY'+ymd+'02',orderId:'XP'+ymd+pad(6),embroidererId:'E03',amount:130,by:'沈总管',ts:nowISO(),note:'微信转账尾款'},
+    {id:'PY'+ymd+'03',orderId:'XP'+ymd+pad(1),embroidererId:'E01',amount:236,by:'沈总管',ts:nowISO(),note:'先付部分，余款下月结'}
+  ];
+  s.exceptions=[{id:'EX'+ymd+'01',orderId:'XP'+ymd+pad(1),type:'工期风险',desc:'扇骨备料偏紧，若今日不交回可能误交期，已现场提醒。',by:'小周',ts:nowISO(),status:'待处理',reply:''}];
+  s.proxyOps=[{id:'PX'+ymd+'01',orderId:'XP'+ymd+pad(3),action:'returnGoods',belongTo:'E01',operator:'小周',witness:'电话确认',witnessDetail:'苏绣娘电话口述委托，班组阿岚在场旁听',status:'pending_review',createdAt:nowISO(),note:'绣娘当日未带手机，由跟单员代为登记交回',reviewedBy:'',reviewedAt:''}];
+  s.orders[2].pendingProxy=['PX'+ymd+'01'];
+  s.logs=[
+    {id:'L8',ts:nowISO(),action:'提交异常',orderId:'XP'+ymd+pad(1),detail:'工期风险：扇骨备料偏紧',role:'tracker',roleName:'跟单员',actor:'小周',extra:null},
+    {id:'L7',ts:nowISO(),action:'代操作',orderId:'XP'+ymd+pad(3),detail:'小周 代 苏绣娘 执行「交回登记」｜见证：电话确认｜待复核',role:'tracker',roleName:'跟单员',actor:'小周',extra:{proxyId:'PX'+ymd+'01',belongTo:'苏绣娘',operator:'小周',witness:'电话确认',status:'待复核'}},
+    {id:'L6',ts:nowISO(),action:'回收登记',orderId:'XP'+ymd+pad(4),detail:'牡丹手帕 回收 12 件，外观初检无破损',role:'admin',roleName:'管理员',actor:'沈总管',extra:null},
+    {id:'L5',ts:nowISO(),action:'发料',orderId:'XP'+ymd+pad(2),detail:'百鸟朝凤屏 发料批次 FL'+ymd+'02',role:'admin',roleName:'管理员',actor:'沈总管',extra:null},
+    {id:'L4',ts:nowISO(),action:'质检通过',orderId:'XP'+ymd+pad(5),detail:'山水条幅 合格 1 件',role:'admin',roleName:'管理员',actor:'沈总管',extra:null},
+    {id:'L3',ts:nowISO(),action:'结算',orderId:'XP'+ymd+pad(6),detail:'福字挂饰 实发 ¥530.00',role:'admin',roleName:'管理员',actor:'沈总管',extra:null},
+    {id:'L3b',ts:nowISO(),action:'结算',orderId:'XP'+ymd+pad(1),detail:'并蒂莲团扇 实发 ¥536.00',role:'admin',roleName:'管理员',actor:'沈总管',extra:null},
+    {id:'L3a',ts:nowISO(),action:'支付工费',orderId:'XP'+ymd+pad(1),detail:'向 苏绣娘 支付 ¥236.00｜剩余未付 ¥300.00',role:'admin',roleName:'管理员',actor:'沈总管',extra:{amount:236,embroiderer:'苏绣娘',left:300}},
+    {id:'L2',ts:nowISO(),action:'模拟扫码收料',orderId:'XP'+ymd+pad(1),detail:'并蒂莲团扇 扫码 SM'+ymd+'001',role:'tracker',roleName:'跟单员',actor:'小周',extra:null},
+    {id:'L1',ts:nowISO(),action:'建单',orderId:'XP'+ymd+pad(7),detail:'蝶恋花香囊 创建，待派单',role:'admin',roleName:'管理员',actor:'沈总管',extra:null}
+  ];
+  return s;
+}
+function emptyData(){
+  var cur=db||{};
+  var base=seed();
+  return {version:1,seq:{all:0,order:1},
+    settings:JSON.parse(JSON.stringify(cur.settings||base.settings)),
+    users:JSON.parse(JSON.stringify((cur.users&&cur.users.length)?cur.users:base.users)),
+    orders:[],logs:[],exceptions:[],proxyOps:[],photos:[],payments:[]};
+}
+function deleteOrderFn(id){
+  var o=findOrder(id);
+  assert(o,'未找到该订单');
+  assert(db.settings.role==='admin','仅管理员可删除订单');
+  var pays=(db.payments||[]).filter(function(p){return p.orderId===id;});
+  var excs=(db.exceptions||[]).filter(function(e){return e.orderId===id;});
+  var pxs=(db.proxyOps||[]).filter(function(p){return p.orderId===id;});
+  var phs=(db.photos||[]).filter(function(p){return p.orderId===id;});
+  var paidAmt=pays.reduce(function(s,p){return s+toCents(p.amount);},0);
+  var settled=(o.status==='settled');
+  var links=[];
+  if(pays.length)links.push('付款记录 '+pays.length+' 条（共 '+money(paidAmt)+'）');
+  if(excs.length)links.push('异常 '+excs.length+' 条');
+  if(pxs.length)links.push('代操作 '+pxs.length+' 条');
+  if(phs.length)links.push('现场照片 '+phs.length+' 张');
+  var msg='确定删除订单「'+o.title+'」（'+id+'）？\n当前状态：'+(STATUS[o.status]?STATUS[o.status].t:o.status)+'\n';
+  if(links.length)msg+='将一并删除：'+links.join('、')+'\n';
+  if(settled)msg+='\n⚠️ 该订单已结算且有工费数据，删除会同时清除结算与付款记录，请确认款项已核对无误！\n';
+  msg+='\n此操作不可恢复，建议先在「留痕」导出 JSON 备份。';
+  if(!confirm(msg))return;
+  var delPxIds=pxs.map(function(p){return p.id;});
+  db.orders=db.orders.filter(function(x){return x.id!==id;});
+  db.payments=(db.payments||[]).filter(function(p){return p.orderId!==id;});
+  db.exceptions=(db.exceptions||[]).filter(function(e){return e.orderId!==id;});
+  db.proxyOps=(db.proxyOps||[]).filter(function(p){return p.orderId!==id;});
+  db.photos=(db.photos||[]).filter(function(p){return p.orderId!==id;});
+  db.logs=(db.logs||[]).filter(function(l){return l.orderId!==id;});
+  db.orders.forEach(function(x){
+    if(x.pendingProxy&&x.pendingProxy.length)x.pendingProxy=x.pendingProxy.filter(function(px){return delPxIds.indexOf(px)<0;});
+  });
+  addLog('删除订单','','管理员删除订单「'+o.title+'」（'+id+'，原状态：'+(STATUS[o.status]?STATUS[o.status].t:o.status)+'）'+(links.length?'；同时清除：'+links.join('、'):''));
+  save();closeSheet();render();toast('已删除订单「'+o.title+'」');
+}
+
+/* ============================ 业务动作 ============================ */
+var Biz={
+  createOrder:function(o,d){
+    assert(d.title&&String(d.title).trim(),'请填写绣品名称');
+    assert(d.deadline&&!isNaN(new Date(d.deadline).getTime()),'请选择正确的交期');
+    assert(Number(d.qty)>0,'件数需大于 0');
+    db.seq=db.seq||{all:0,order:1};
+    var seqNo=Number(db.seq.order)||1;db.seq.order=seqNo+1;
+    var id='XP'+(''+new Date().getFullYear()+pad(new Date().getMonth()+1)+pad(new Date().getDate()))+pad(seqNo);
+    var n={id:id,title:String(d.title).trim(),pattern:d.pattern,qty:Number(d.qty)||1,needle:d.needle,deadline:new Date(d.deadline).toISOString(),unitPrice:Number(d.unitPrice)||0,material:d.material,assignedTo:d.assignedTo||'',status:d.assignedTo?'assigned':'pending_assign',createdAt:nowISO(),history:[],qcRecords:[],reworkCount:0,pendingProxy:[],progress:0};
+    step(n,'建单','绣品单创建 · '+(d.assignedTo?'派给 '+uname(d.assignedTo):'暂存待派'),actor().name);
+    db.orders.unshift(n);
+    addLog('建单',id,'创建「'+n.title+'」'+(d.assignedTo?'，指派 '+uname(d.assignedTo):'，待派单'));
+    ui.flashId=id;
+    return '已创建 '+id+'，已置顶显示'+(d.assignedTo?'（已派单）':'（待派单）');
+  },
+  editOrder:function(o,d,ctx){
+    var changes=[];
+    function set(field,label,val){if(val!=null&&val!==o[field]){changes.push(label+'：'+NA(o[field])+' → '+NA(val));o[field]=val;}}
+    function NA(v){return (v==null||v==='')?'—':v;}
+    var title=String(d.title||'').trim();
+    assert(title,'请填写绣品名称');
+    assert(d.deadline&&!isNaN(new Date(d.deadline).getTime()),'请选择正确的交期');
+    assert(numVal(d.qty,0)>0,'件数需大于 0');
+    set('title','绣品名称',title);
+    set('pattern','花样规格',String(d.pattern||'').trim());
+    set('qty','件数',numVal(d.qty,o.qty));
+    set('needle','针法',String(d.needle||'').trim());
+    set('deadline','交期',new Date(d.deadline).toISOString());
+    set('unitPrice','单价',yuan(toCents(d.unitPrice)));
+    set('material','用料',String(d.material||'').trim());
+    if(d.assignedTo!==undefined&&d.assignedTo!==o.assignedTo){changes.push('归属绣娘：'+uname(o.assignedTo)+' → '+uname(d.assignedTo));o.assignedTo=d.assignedTo;if(o.assignedTo&&o.status==='pending_assign')o.status='assigned';}
+    if(!changes.length)return '没有需要修改的内容';
+    step(o,'修改订单',changes.join('；'),ctx.who.name);
+    addLog('修改订单',o.id,changes.join('；'),null,ctx.who);
+    return '已修改订单（'+changes.length+' 项）';
+  },
+  assign:function(o,d){
+    assert(o.status==='pending_assign'||o.status==='assigned','仅待派单/待接单可派单或改派');
+    o.assignedTo=d.assignedTo;o.status='assigned';
+    step(o,'派单','指派给 '+uname(d.assignedTo)+(d.note?'｜'+d.note:''),actor().name);
+    addLog('派单',o.id,'指派给 '+uname(d.assignedTo)+(d.note?'｜'+d.note:''));
+    return '已派单给 '+uname(d.assignedTo);
+  },
+  accept:function(o,d,ctx){
+    assert(o.status==='assigned','该单当前不在待接单状态');
+    o.status='accepted';step(o,'接单','绣娘确认接单'+(d.note?'｜'+d.note:''),ctx.who.name);
+    addLog('接单',o.id,uname(o.assignedTo)+' 确认接单'+(d.note?'｜'+d.note:''),null,ctx.who);
+    return '接单成功，等待发料';
+  },
+  sendMaterial:function(o,d,ctx){
+    assert(o.status==='assigned'||o.status==='accepted','需先派单/接单后再发料');
+    o.materialInfo={detail:d.detail||o.material,batch:d.batch,by:ctx.who.name,ts:nowISO()};
+    o.status='material_sent';step(o,'发料','批次 '+d.batch+'｜'+(d.detail||o.material),ctx.who.name);
+    addLog('发料',o.id,'发料批次 '+d.batch+'｜'+(d.detail||o.material),null,ctx.who);
+    return '发料已登记，等待跟单员扫码收料';
+  },
+  scanSend:function(o,d,ctx){
+    assert(o.status==='assigned'||o.status==='accepted','需先派单/接单后再扫码放料');
+    var detail=d.detail||o.material;
+    o.materialInfo={detail:detail,batch:d.batch,by:ctx.who.name,ts:nowISO()};
+    o.sendInfo={by:ctx.who.name,ts:nowISO(),scanCode:d.scanCode||'',batch:d.batch,detail:detail,note:d.note||''};
+    o.status='material_received';
+    step(o,'扫码放料','仓库扫码 '+(d.scanCode||'')+' 放料｜批次 '+d.batch+'｜'+(d.note||'料齐待领'),ctx.who.name);
+    addLog('扫码放料',o.id,'仓库放料给 '+uname(o.assignedTo)+'｜扫码 '+(d.scanCode||'')+'｜批次 '+d.batch,null,ctx.who);
+    return '已扫码放料给 '+uname(o.assignedTo)+'，等待绣娘确认领料';
+  },
+  scanReceive:function(o,d,ctx){
+    assert(o.status==='material_sent','该单不在已发料·待收料状态');
+    o.receiveInfo={by:ctx.who.name,ts:nowISO(),scanCode:d.scanCode,note:d.note||''};
+    o.status='material_received';step(o,'扫码收料','模拟扫码 '+(d.scanCode||'')+'｜'+(d.note||'数量核对无误'),ctx.who.name);
+    addLog('模拟扫码收料',o.id,'扫码 '+(d.scanCode||'')+'，核对发料批次 '+(o.materialInfo?o.materialInfo.batch:'—')+(d.note?'｜'+d.note:''),null,ctx.who);
+    return '收料登记完成，等待绣娘确认领料';
+  },
+  confirmMaterial:function(o,d,ctx){
+    assert(o.status==='material_received','该单不在已收料·待领料状态');
+    o.status='producing';o.progress=5;
+    step(o,'确认领料','领料 '+Number(d.qty||o.qty)+' 件份，开工生产'+(d.note?'｜'+d.note:''),ctx.who.name);
+    addLog('确认领料',o.id,uname(o.assignedTo)+' 确认领料并开工'+(d.note?'｜'+d.note:''),null,ctx.who);
+    return '领料已确认，倒计时开始';
+  },
+  startProduce:function(o,d,ctx){
+    assert(o.status==='material_received','需先完成扫码收料再登记开工');
+    o.status='producing';o.progress=Number(d.progress)||5;
+    step(o,'登记开工','管理员登记开工，进度 '+o.progress+'%'+(d.note?'｜'+d.note:''),ctx.who.name);
+    addLog('生产登记',o.id,'登记开工，进度 '+o.progress+'%'+(d.note?'｜'+d.note:''),null,ctx.who);
+    return '已登记开工';
+  },
+  progress:function(o,d,ctx){
+    assert(o.status==='producing','仅生产中可登记进度');
+    o.progress=Math.max(0,Math.min(100,Number(d.progress)||0));
+    step(o,'生产进度','进度更新至 '+o.progress+'%'+(d.note?'｜'+d.note:''),ctx.who.name);
+    addLog('生产登记',o.id,'生产进度 '+o.progress+'%'+(d.note?'｜'+d.note:''),null,ctx.who);
+    return '生产进度已留痕';
+  },
+  returnGoods:function(o,d,ctx){
+    assert(o.status==='producing'||o.status==='rework','仅生产中/返工中可交回');
+    o.returnInfo={qty:Number(d.qty)||o.qty,note:d.note||'',ts:nowISO(),by:ctx.who.name};
+    o.status='returned';step(o,'交回登记','交回 '+o.returnInfo.qty+' 件'+(d.note?'｜'+d.note:''),ctx.who.name);
+    addLog('交回登记',o.id,'交回 '+o.returnInfo.qty+' 件'+(d.note?'｜'+d.note:''),null,ctx.who);
+    return '交回已登记，等待回收';
+  },
+  recover:function(o,d,ctx){
+    assert(o.status==='returned','该单不在已交回·待回收状态');
+    o.recoverInfo={qty:Number(d.qty)||o.qty,note:d.note||'',by:ctx.who.name,ts:nowISO()};
+    o.status='recovered';step(o,'回收登记','回收 '+o.recoverInfo.qty+' 件'+(d.note?'｜'+d.note:''),ctx.who.name);
+    addLog('回收登记',o.id,'回收 '+o.recoverInfo.qty+' 件'+(d.note?'｜'+d.note:''),null,ctx.who);
+    return '回收登记完成，待质检';
+  },
+  qcPass:function(o,d,ctx){
+    assert(o.status==='recovered','该单不在待质检状态');
+    var q=Number(d.qty)||o.qty;o.passQty=q;o.status='passed';
+    o.qcRecords.push({result:'pass',qty:q,note:d.note||'',by:ctx.who.name,ts:nowISO()});
+    step(o,'质检通过','合格 '+q+' 件'+(d.note?'｜'+d.note:''),ctx.who.name);
+    addLog('质检通过',o.id,'合格 '+q+' 件'+(d.note?'｜'+d.note:''),null,ctx.who);
+    return '质检通过，可结算';
+  },
+  qcRework:function(o,d,ctx){
+    assert(o.status==='recovered'||o.status==='rework','该单不在待质检/返工状态');
+    o.reworkCount=(o.reworkCount||0)+1;o.status='rework';
+    o.qcRecords.push({result:'rework',qty:0,note:d.note||'',defect:d.defect||'',by:ctx.who.name,ts:nowISO()});
+    step(o,'质检返工','第 '+o.reworkCount+' 次返工｜缺陷：'+(d.defect||'—')+'｜'+(d.note||''),ctx.who.name);
+    addLog('质检返工',o.id,'判定返工，缺陷：'+(d.defect||'—')+'｜'+(d.note||''),null,ctx.who);
+    return '已标记返工，绣娘可查看原因';
+  },
+  settle:function(o,d,ctx){
+    assert(o.status==='passed','仅质检通过的单可结算');
+    var qty=numVal(d.qty,o.passQty||o.qty),up=numVal(d.unitPrice,o.unitPrice),ded=numVal(d.deduct,0),bon=numVal(d.bonus,0);
+    var amountC=Math.max(0,Math.round(qty*toCents(up))-toCents(ded)+toCents(bon));
+    var amount=yuan(amountC);
+    o.settlement={qty:qty,unitPrice:up,deduct:ded,bonus:bon,amount:amount,by:ctx.who.name,ts:nowISO(),note:d.note||''};
+    o.status='settled';step(o,'结算','实发 '+money(amount)+'（'+qty+'×'+money(up)+' -'+money(ded)+' +'+money(bon)+'）',ctx.who.name);
+    addLog('结算',o.id,'实发 '+money(amount)+'｜归属 '+uname(o.assignedTo)+'｜'+qty+' 件',{amount:amount,embroiderer:uname(o.assignedTo)},ctx.who);
+    return '结算完成，实发 '+money(amount);
+  },
+  resettle:function(o,d,ctx){
+    assert(o.status==='settled'&&o.settlement,'仅已结算绣品可修正结算');
+    var qty=numVal(d.qty,o.settlement.qty),up=numVal(d.unitPrice,o.settlement.unitPrice),ded=numVal(d.deduct,o.settlement.deduct),bon=numVal(d.bonus,o.settlement.bonus);
+    var amountC=Math.max(0,Math.round(qty*toCents(up))-toCents(ded)+toCents(bon));
+    var amount=yuan(amountC);
+    var oldAmt=yuan(toCents(o.settlement.amount));
+    o.settlement={qty:qty,unitPrice:up,deduct:ded,bonus:bon,amount:amount,by:ctx.who.name,ts:nowISO(),note:d.note||'修正结算'};
+    step(o,'修正结算','实发 '+money(oldAmt)+' → '+money(amount)+'（'+qty+'×'+money(up)+' -'+money(ded)+' +'+money(bon)+'）',ctx.who.name);
+    addLog('修正结算',o.id,'实发 '+money(oldAmt)+' → '+money(amount)+'｜归属 '+uname(o.assignedTo),{oldAmount:oldAmt,amount:amount},ctx.who);
+    return '已修正结算：'+money(oldAmt)+' → '+money(amount);
+  },
+  payWage:function(o,d,ctx){
+    assert(o.status==='settled'&&o.settlement,'仅已结算的绣品可登记付款');
+    var amt=yuan(toCents(d.amount));
+    assert(amt>0,'付款金额必须大于 0');
+    var w=wageOf(o),leftC=Math.max(0,toCents(w.left)-toCents(amt));
+    assert(toCents(amt)<=toCents(w.left),'本次付款 '+money(amt)+' 超过未付余额 '+money(w.left));
+    db.payments.unshift({id:uid('PY'),orderId:o.id,embroidererId:o.assignedTo,amount:amt,by:ctx.who.name,ts:nowISO(),note:d.note||''});
+    step(o,'支付工费','支付 '+money(amt)+(d.note?'｜'+d.note:''),ctx.who.name);
+    addLog('支付工费',o.id,'向 '+uname(o.assignedTo)+' 支付 '+money(amt)+'｜剩余未付 '+money(yuan(leftC))+(d.note?'｜'+d.note:''),{amount:amt,embroiderer:uname(o.assignedTo),left:yuan(leftC)},ctx.who);
+    return '已支付 '+money(amt)+'，该单剩余未付 '+money(yuan(leftC));
+  },
+  urge:function(o,d,ctx){
+    step(o,'催办提醒','管理员催办：'+(d.note||'请尽快处理'),ctx.who.name);
+    addLog('催办提醒',o.id,'催办 '+(d.note||'请尽快处理')+'｜'+uname(o.assignedTo),null,ctx.who);
+    return '催办提醒已留痕';
+  }
+};
+
+function doBiz(name,o,d,ctx){
+  ctx=ctx||{};
+  ctx.who=ctx.who||actor();
+  var msg=Biz[name](o,d,ctx);
+  save();
+  return msg;
+}
+
+/* ============================ 表单与弹层 ============================ */
+function fieldHtml(f){
+  var v=f.value==null?'':esc(String(f.value));
+  var c='';
+  if(f.type==='select'){
+    c='<select name="'+f.name+'">'+(f.options||[]).map(function(o){return '<option value="'+esc(o.v)+'"'+(String(o.v)===String(f.value==null?'':f.value)?' selected':'')+'>'+esc(o.t)+'</option>';}).join('')+'</select>';
+  }else if(f.type==='textarea'){
+    c='<textarea name="'+f.name+'" rows="'+(f.rows||3)+'" placeholder="'+esc(f.ph||'')+'">'+v+'</textarea>';
+  }else if(f.type==='info'){
+    return '<div class="info"'+(f.id?' id="'+f.id+'"':'')+'>'+f.value+'</div>';
+  }else if(f.type==='file'){
+    c='<input type="file" name="'+f.name+'" accept="image/*" capture="environment">';
+  }else{
+    c='<input type="'+(f.type||'text')+'" name="'+f.name+'" value="'+v+'" placeholder="'+esc(f.ph||'')+'"'+(f.step?' step="'+f.step+'"':'')+(f.min!=null?' min="'+f.min+'"':'')+'>';
+  }
+  return '<div class="field"><label>'+esc(f.label)+(f.required?' <em>*</em>':'')+'</label>'+c+(f.help?'<div class="help">'+esc(f.help)+'</div>':'')+'</div>';
+}
+function openForm(title,fields,onSubmit,submitText,onChange){
+  $('#sheetTitle').textContent=title;
+  $('#sheetBody').innerHTML='<form id="sheetForm" novalidate>'+fields.map(fieldHtml).join('')+'<button class="btn block" type="submit">'+esc(submitText||'确认提交')+'</button></form>';
+  sheetState.onSubmit=onSubmit;sheetState.onChange=onChange||null;
+  sheetState.required=fields.filter(function(f){return f.required&&f.name;}).map(function(f){return {name:f.name,label:f.label};});
+  $('#sheetBody').scrollTop=0;
+  $('#mask').classList.remove('hidden');
+  var t=$('#toast');t.className='toast';t.textContent='';
+}
+function openDetail(title,html){
+  $('#sheetTitle').textContent=title;
+  $('#sheetBody').innerHTML=html+'<button class="btn ghost block" data-act="closeSheet">关闭</button>';
+  sheetState.onSubmit=null;sheetState.onChange=null;sheetState.required=[];
+  $('#mask').classList.remove('hidden');
+}
+function closeSheet(){$('#mask').classList.add('hidden');sheetState.onSubmit=null;sheetState.onChange=null;sheetState.required=[];}
+function optUsers(role){return db.users.filter(function(u){return u.role===role;}).map(function(u){return {v:u.id,t:u.name};});}
+function optOrders(list){return list.map(function(o){return {v:o.id,t:o.id+' · '+o.title+'（'+STATUS[o.status].t+'）'};});}
+function addUserFn(name,role){
+  name=String(name||'').trim();assert(name,'请填写人员姓名');
+  assert(['embroiderer','tracker','admin'].indexOf(role)>=0,'请选择正确角色');
+  db.seq=db.seq||{all:0,order:1};db.seq.all=(Number(db.seq.all)||0)+1;
+  var prefix=role==='embroiderer'?'E':(role==='tracker'?'T':'A');
+  var id=prefix+Date.now().toString(36).toUpperCase()+pad(db.seq.all%100);
+  db.users.push({id:id,name:name,role:role});
+  addLog('人员管理','','新增'+ROLE_NAME[role]+' '+name+'（'+id+'）');
+  save();return id;
+}
+
+/* 各动作表单 */
+function openActionForm(act,id){
+  var o=id?findOrder(id):null;
+  var A=actor();
+  if(act==='newOrder'){
+    openForm('新建绣品单 · 派单',[
+      {name:'title',label:'绣品名称',required:true,ph:'如：并蒂莲团扇'},
+      {name:'pattern',label:'花样 / 规格',ph:'如：双面绣·团扇'},
+      {name:'qty',label:'件数',type:'number',value:1,min:1,required:true},
+      {name:'needle',label:'针法要求',ph:'如：套针/抢针'},
+      {name:'deadline',label:'交期',type:'datetime-local',value:hoursLater(48),required:true},
+      {name:'unitPrice',label:'计件单价（元/件）',type:'number',value:50,min:0,step:'0.01',required:true},
+      {name:'material',label:'用料说明',type:'textarea',ph:'线号、布料、辅料清单'},
+      {name:'assignedTo',label:'指派绣娘（留空=暂存待派单）',type:'select',value:'',options:[{v:'',t:'— 暂不派单 —'}].concat(optUsers('embroiderer'))},
+      {type:'info',value:'提交后新单会<b>置顶显示</b>。若下拉里没有想要的绣娘，请到工作台「🧵 绣娘与人员」添加。'}
+    ],function(d){
+      var msg=doBiz('createOrder',null,d);
+      ui.adminFilter='all';ui.tab='home';
+      render();$('#view').scrollTop=0;
+      toast(msg);
+      var fid=ui.flashId;
+      setTimeout(function(){var el=$('[data-flash="'+fid+'"]');if(el)try{el.scrollIntoView({block:'center',behavior:'smooth'});}catch(er){}},120);
+      setTimeout(function(){if(ui.flashId===fid){ui.flashId='';render();}},8000);
+    },'创建绣品单');
+    return;
+  }
+  if(act==='editOrder'){
+    openForm('✏️ 修改订单 · '+o.id,[
+      {name:'title',label:'绣品名称',value:o.title,required:true},
+      {name:'pattern',label:'花样 / 规格',value:o.pattern||''},
+      {name:'qty',label:'件数',type:'number',value:o.qty,min:1,required:true},
+      {name:'needle',label:'针法要求',value:o.needle||''},
+      {name:'deadline',label:'交期',type:'datetime-local',value:dtLocal(new Date(o.deadline)),required:true},
+      {name:'unitPrice',label:'计件单价（元/件）',type:'number',value:o.unitPrice,min:0,step:'0.01',required:true},
+      {name:'material',label:'用料说明',type:'textarea',value:o.material||''},
+      {name:'assignedTo',label:'归属绣娘',type:'select',value:o.assignedTo||'',options:[{v:'',t:'— 未指派 —'}].concat(optUsers('embroiderer'))},
+      {type:'info',value:'改动会逐项写入留痕。<b>提示</b>：改件数/单价不会自动改已结算金额，如已结算请另用「修正结算」；改归属绣娘会同步影响后续派单视角，历史留痕仍保留。'}
+    ],function(d){toast(doBiz('editOrder',o,d));render();},'保存修改');return;
+  }
+  if(act==='assign'){
+    openForm('派单 · '+o.id,[
+      {type:'info',value:'<b>'+esc(o.title)+'</b> · '+o.qty+' 件 · 交期 '+esc(fmt(o.deadline))},
+      {name:'assignedTo',label:'指派绣娘',type:'select',value:o.assignedTo||'',options:[{v:'',t:'请选择'}].concat(optUsers('embroiderer')),required:true},
+      {name:'note',label:'派单备注',ph:'如：优先赶制、配色要求'},
+      {type:'info',value:'下拉里没有想要的绣娘？请关闭本页，到工作台「🧵 绣娘与人员」点「＋ 添加绣娘」。'}
+    ],function(d){assert(d.assignedTo,'请选择绣娘');toast(doBiz('assign',o,d));render();},'确认派单');return;
+  }
+  if(act==='accept'){
+    openForm('接单 · '+o.id,[
+      {type:'info',value:'<b>'+esc(o.title)+'</b>｜'+o.qty+' 件｜单价 '+money(o.unitPrice)+'｜交期 '+esc(fmt(o.deadline))+'<br>预计劳动果实：'+money(o.qty*o.unitPrice)},
+      {name:'note',label:'接单备注',ph:'可填写档期或疑问'}
+    ],function(d){toast(doBiz('accept',o,d));render();},'确认接单');return;
+  }
+  if(act==='sendMaterial'){
+    openForm('发料登记 · '+o.id,[
+      {type:'info',value:'归属绣娘 <b>'+esc(uname(o.assignedTo))+'</b>｜'+esc(o.title)},
+      {name:'batch',label:'发料批次号',value:'FL'+(''+new Date().getFullYear()+pad(new Date().getMonth()+1)+pad(new Date().getDate()))+pad(db.seq.order+100),required:true},
+      {name:'detail',label:'发料明细',type:'textarea',value:o.material,required:true},
+      {name:'note',label:'备注',ph:'线色清点、辅料数量'}
+    ],function(d){toast(doBiz('sendMaterial',o,d));render();},'登记发料');return;
+  }
+  if(act==='scanSend'){
+    openForm('📦 扫码放料 · 仓库发料给绣娘',[
+      {type:'info',value:'归属绣娘 <b>'+esc(uname(o.assignedTo))+'</b>｜'+esc(o.title)+'<br>扫码放料后，绣娘端即可「确认领料」开工。'},
+      {name:'scanCode',label:'扫码号',value:'FL'+Date.now().toString().slice(-8),required:true},
+      {name:'batch',label:'发料批次号',value:'FL'+(''+new Date().getFullYear()+pad(new Date().getMonth()+1)+pad(new Date().getDate()))+pad(db.seq.order+100),required:true},
+      {name:'detail',label:'放料明细',type:'textarea',value:o.material,required:true},
+      {name:'note',label:'备注',ph:'如：线色清点、辅料数量'}
+    ],function(d){toast(doBiz('scanSend',o,d));render();},'确认放料');return;
+  }
+  if(act==='scanReceive'){
+    openForm('模拟扫码 · 收料确认',[
+      {type:'info',value:'扫码结果：<b>'+esc(o.id)+'</b><br>'+esc(o.title)+'｜发料批次 '+(o.materialInfo?esc(o.materialInfo.batch):'—')+'｜归属 '+esc(uname(o.assignedTo))},
+      {name:'scanCode',label:'模拟扫码号',value:'SM'+Date.now().toString().slice(-8),required:true},
+      {name:'note',label:'清点备注',ph:'如：数量核对无误，线色齐全'}
+    ],function(d){toast(doBiz('scanReceive',o,d));render();},'确认收料');return;
+  }
+  if(act==='confirmMaterial'){
+    openForm('确认领料 · '+o.id,[
+      {type:'info',value:'请核对 <b>'+esc(o.material||'发料明细')+'</b><br>放料人：'+(o.sendInfo?esc(o.sendInfo.by):(o.receiveInfo?esc(o.receiveInfo.by):'—'))+'｜批次 '+(o.materialInfo?esc(o.materialInfo.batch):'—')},
+      {name:'qty',label:'领料件份',type:'number',value:o.qty,min:1,required:true},
+      {name:'note',label:'备注',ph:'如：线色核对无误'}
+    ],function(d){toast(doBiz('confirmMaterial',o,d));render();},'确认领料并开工');return;
+  }
+  if(act==='startProduce'){
+    openForm('生产登记 · 开工',[
+      {type:'info',value:esc(o.id)+'｜归属 '+esc(uname(o.assignedTo))+'｜已收料，可登记开工'},
+      {name:'progress',label:'初始进度（%）',type:'number',value:5,min:0,required:true},
+      {name:'note',label:'开工备注',ph:'如：绣绷已上、起针位置确认'}
+    ],function(d){toast(doBiz('startProduce',o,d));render();},'登记开工');return;
+  }
+  if(act==='progress'){
+    openForm('生产进度登记 · '+o.id,[
+      {type:'info',value:'当前进度 <b>'+(o.progress||0)+'%</b>｜交期 '+esc(fmt(o.deadline))},
+      {name:'progress',label:'进度（%）',type:'number',value:o.progress||0,min:0,required:true},
+      {name:'note',label:'现场备注',ph:'如：主体花样完成，待收边'}
+    ],function(d){toast(doBiz('progress',o,d));render();},'登记进度');return;
+  }
+  if(act==='returnGoods'){
+    openForm('交回登记 · '+o.id,[
+      {type:'info',value:'<b>'+esc(o.title)+'</b>｜交期 '+esc(fmt(o.deadline))+'｜'+cd(o.deadline).text},
+      {name:'qty',label:'交回件数',type:'number',value:o.qty,min:1,required:true},
+      {name:'note',label:'交回说明',ph:'如：已完成、边角已修净'}
+    ],function(d){toast(doBiz('returnGoods',o,d));render();},'提交交回');return;
+  }
+  if(act==='recover'){
+    openForm('回收登记 · '+o.id,[
+      {type:'info',value:'交回 '+(o.returnInfo?o.returnInfo.qty:o.qty)+' 件｜交回人 '+(o.returnInfo?esc(o.returnInfo.by):'—')},
+      {name:'qty',label:'实收件数',type:'number',value:(o.returnInfo?o.returnInfo.qty:o.qty),min:1,required:true},
+      {name:'note',label:'外观初检',ph:'如：无破损、无污渍'}
+    ],function(d){toast(doBiz('recover',o,d));render();},'登记回收');return;
+  }
+  if(act==='qcPass'){
+    openForm('质检通过 · '+o.id,[
+      {type:'info',value:'回收 '+((o.recoverInfo&&o.recoverInfo.qty)||o.qty)+' 件｜归属 '+esc(uname(o.assignedTo))},
+      {name:'qty',label:'合格件数',type:'number',value:(o.recoverInfo?o.recoverInfo.qty:o.qty),min:1,required:true},
+      {name:'note',label:'质检评语',ph:'如：针脚均匀，配色准确'}
+    ],function(d){toast(doBiz('qcPass',o,d));render();},'判定通过');return;
+  }
+  if(act==='qcRework'){
+    openForm('质检返工 · '+o.id,[
+      {type:'info',value:'将退回 <b>'+esc(uname(o.assignedTo))+'</b>，累计返工 '+(o.reworkCount||0)+' 次'},
+      {name:'defect',label:'缺陷点',required:true,ph:'如：盘金不匀、线头外露、配色偏差'},
+      {name:'note',label:'返工要求',type:'textarea',required:true,ph:'写明需重做的位置与标准'}
+    ],function(d){toast(doBiz('qcRework',o,d));render();},'判定返工');return;
+  }
+  if(act==='settle'){
+    openForm('工费结算 · '+o.id,[
+      {type:'info',value:'归属绣娘 <b>'+esc(uname(o.assignedTo))+'</b>｜合格 '+(o.passQty||o.qty)+' 件｜返工 '+(o.reworkCount||0)+' 次<br>实发 = 合格件数 × 单价 − 扣款 + 补贴'},
+      {name:'qty',label:'结算件数',type:'number',value:o.passQty||o.qty,min:1,required:true},
+      {name:'unitPrice',label:'计件单价（元）',type:'number',value:o.unitPrice,min:0,step:'0.01',required:true},
+      {name:'deduct',label:'扣款（元）',type:'number',value:(o.reworkCount||0)*5,min:0,step:'0.01'},
+      {name:'bonus',label:'补贴 / 奖励（元）',type:'number',value:0,min:0,step:'0.01'},
+      {name:'note',label:'结算备注',ph:'如：准时交付奖励'}
+    ],function(d){toast(doBiz('settle',o,d));render();},'确认结算');return;
+  }
+  if(act==='resettle'){
+    var old=o.settlement||{};
+    openForm('✏️ 修正结算 · '+o.id,[
+      {type:'info',value:'归属绣娘 <b>'+esc(uname(o.assignedTo))+'</b>｜'+esc(o.title)+'<br>当前实发 <b>'+money(old.amount)+'</b>。修正只改结算金额，已登记的付款记录保留。'},
+      {name:'qty',label:'结算件数',type:'number',value:old.qty,min:0,step:'0.01',required:true},
+      {name:'unitPrice',label:'计件单价（元）',type:'number',value:old.unitPrice,min:0,step:'0.01',required:true},
+      {name:'deduct',label:'扣款（元）',type:'number',value:old.deduct||0,min:0,step:'0.01'},
+      {name:'bonus',label:'补贴 / 奖励（元）',type:'number',value:old.bonus||0,min:0,step:'0.01'},
+      {name:'note',label:'修正原因',ph:'如：原先多算 1 元，修正为正确金额'}
+    ],function(d){toast(doBiz('resettle',o,d));render();},'保存修正');return;
+  }
+  if(act==='payWage'){
+    var w=wageOf(o);
+    openForm('💰 支付工费 · '+o.id,[
+      {type:'info',value:'归属绣娘 <b>'+esc(uname(o.assignedTo))+'</b>｜'+esc(o.title)+'<br>应发 '+money(w.due)+' ｜ 已付 '+money(w.paid)+' ｜ <b>未付 '+money(w.left)+'</b>'},
+      {name:'amount',label:'本次付款金额（元）',type:'number',value:w.left,min:0.01,step:'0.01',required:true},
+      {name:'note',label:'付款备注',ph:'如：现金 / 微信转账 / 银行转账'},
+      {type:'info',value:'可多次付款，累计不超过应发工费。每次付款都会留痕。'}
+    ],function(d){toast(doBiz('payWage',o,d));render();},'确认付款');return;
+  }
+  if(act==='urge'){
+    openForm('催办提醒 · '+o.id,[
+      {type:'info',value:'当前状态：'+STATUS[o.status].t+'｜'+cd(o.deadline).text},
+      {name:'note',label:'催办内容',value:'请尽快处理，注意交期',required:true}
+    ],function(d){toast(doBiz('urge',o,d));render();},'发送催办');return;
+  }
+  if(act==='exception'){
+    openForm('提交现场异常',[
+      {name:'orderId',label:'关联绣品单',type:'select',value:o?o.id:'',options:optOrders(db.orders.filter(function(x){return x.status!=='settled';})),required:true},
+      {name:'type',label:'异常类型',type:'select',value:'缺料/错料',options:['缺料/错料','工期延误','质量问题','设备故障','绣娘无法联系','代操作异议','其他'].map(function(x){return {v:x,t:x};}),required:true},
+      {name:'desc',label:'异常描述',type:'textarea',required:true,ph:'时间、地点、现象与已采取的措施'}
+    ],function(d){var oo=findOrder(d.orderId);assert(oo,'请选择绣品单');db.exceptions.unshift({id:uid('EX'),orderId:d.orderId,type:d.type,desc:d.desc,by:A.name,ts:nowISO(),status:'待处理',reply:''});addLog('提交异常',d.orderId,d.type+'：'+d.desc);save();render();toast('异常已提交，等待管理员处理');},'提交异常');return;
+  }
+  if(act==='photo'){
+    openForm('现场拍照留痕',[
+      {name:'orderId',label:'关联绣品单',type:'select',value:o?o.id:'',options:optOrders(db.orders),required:true},
+      {name:'note',label:'现场说明',ph:'如：发料清点、绣绷上稿、成品初检'},
+      {name:'photo',label:'拍照 / 选择图片',type:'file',help:'手机端会调用相机；不选择图片时自动生成带时间水印的模拟现场留痕图'},
+      {type:'info',value:'照片压缩后仅保存在<b>当前浏览器本地</b>，不上传任何服务器。'}
+    ],function(d){
+      var oo=findOrder(d.orderId);assert(oo,'请选择绣品单');
+      var f=d.photo;
+      function finish(dataUrl){
+        db.photos.unshift({id:uid('PH'),orderId:oo.id,ts:nowISO(),by:actor().name,note:d.note||'现场留痕',dataUrl:dataUrl||genPhoto(oo,d.note)});
+        step(oo,'现场拍照','跟单员现场拍照留痕'+(d.note?'｜'+d.note:''),actor().name);
+        addLog('现场拍照',oo.id,'现场拍照留痕 · '+(d.note||'—')+'（图片仅存本地）');
+        save();closeSheet();render();toast('现场照片已留痕');
+      }
+      if(f&&typeof f!=='string'&&f.size>0){compressImage(f).then(finish);}else{finish(null);}
+      return false;
+    },'保存留痕');return;
+  }
+  if(act==='addEmbroiderer'){
+    openForm('🧵 添加绣娘',[
+      {name:'name',label:'绣娘姓名',required:true,ph:'如：陈绣娘'},
+      {type:'info',value:'添加后立刻出现在 <b>派单</b>、<b>新建绣品单</b> 的绣娘下拉里；绣娘端切换身份也能选到她。'}
+    ],function(d){addUserFn(d.name,'embroiderer');render();toast('绣娘「'+String(d.name).trim()+'」已添加，派单时可选');},'确认添加绣娘');return;
+  }
+  if(act==='addUser'){
+    openForm('添加人员',[
+      {name:'name',label:'姓名',required:true,ph:'如：陈绣娘 / 小周'},
+      {name:'role',label:'角色',type:'select',value:'embroiderer',options:[{v:'embroiderer',t:'绣娘'},{v:'tracker',t:'跟单员'},{v:'admin',t:'管理员'}],required:true}
+    ],function(d){addUserFn(d.name,d.role);render();toast('已新增 '+ROLE_NAME[d.role]+' '+String(d.name).trim()+'，派单时即可选择');},'确认新增');return;
+  }
+  if(act==='proxy'){
+    var candidates=db.orders.filter(function(x){return x.assignedTo&&x.status!=='settled';});
+    assert(candidates.length,'暂无可代操作的已派单绣品');
+    var first=candidates[0];
+    openForm('无手机代操作登记',[
+      {type:'info',value:'代绣娘执行操作，必须完整保留 <b>归属绣娘 / 实际操作人 / 见证方式 / 待复核状态</b>，复核前该记录一直留痕。'},
+      {name:'orderId',label:'选择绣品单',type:'select',value:first.id,options:optOrders(candidates),required:true},
+      {type:'info',id:'proxyBelong',value:proxyBelongHtml(first)},
+      {name:'proxy_action',label:'代执行动作',type:'select',value:proxyActionsFor(first)[0]?proxyActionsFor(first)[0].v:'',options:proxyActionsFor(first).length?proxyActionsFor(first):[{v:'',t:'该单当前无可执行动作'}]},
+      {name:'operator',label:'实际操作人',value:actor().name,required:true},
+      {name:'witness',label:'见证方式',type:'select',value:'电话确认',options:['现场见证人','电话确认','视频连线','纸质委托','班组见证','其他'].map(function(x){return {v:x,t:x};}),required:true},
+      {name:'witnessDetail',label:'见证人 / 见证说明',required:true,ph:'如：班组阿岚在场旁听'},
+      {name:'note',label:'代操作原因',type:'textarea',required:true,value:'绣娘未带手机 / 不便操作，口头委托代登记',ph:'说明为何代操作'},
+      {name:'qty',label:'交回件数（代交回时填写）',type:'number',value:first.qty,min:1}
+    ],function(d){
+      var oo=findOrder(d.orderId);assert(oo,'请选择绣品单');assert(d.proxy_action,'该订单当前无可代执行动作');
+      assert(oo.assignedTo,'该单尚未指派归属绣娘，不能代操作');
+      var belong=user(oo.assignedTo),op=d.operator||actor().name;
+      var ctx={who:{name:op+'（代操作）',role:'tracker'}};
+      var d2={qty:d.qty,note:d.note};
+      doBiz(d.proxy_action,oo,d2,ctx);
+      var rec={id:uid('PX'),orderId:oo.id,action:d.proxy_action,belongTo:oo.assignedTo,operator:op,witness:d.witness,witnessDetail:d.witnessDetail,status:'pending_review',createdAt:nowISO(),note:d.note,reviewedBy:'',reviewedAt:''};
+      db.proxyOps.unshift(rec);oo.pendingProxy=oo.pendingProxy||[];oo.pendingProxy.push(rec.id);
+      addLog('代操作',oo.id,op+' 代 '+belong.name+' 执行「'+ACTION_NAME[d.proxy_action]+'」｜见证：'+d.witness+'｜待复核',
+        {proxyId:rec.id,belongTo:belong.name,operator:op,witness:d.witness,witnessDetail:d.witnessDetail,status:'待复核'},ctx.who);
+      save();render();toast('代操作已生效，标记待复核');
+    },'提交代操作',function(name,v){
+      if(name!=='orderId')return;
+      var oo=findOrder(v);if(!oo)return;
+      var sel=$('#sheetForm [name="proxy_action"]');if(sel){var pa=proxyActionsFor(oo);sel.innerHTML=(pa.length?pa:[{v:'',t:'该单当前无可执行动作'}]).map(function(a){return '<option value="'+esc(a.v)+'">'+esc(a.t)+'</option>';}).join('');}
+      var b=$('#proxyBelong');if(b)b.innerHTML=proxyBelongHtml(oo);
+    });return;
+  }
+}
+function proxyActionsFor(o){
+  var a=[];
+  if(o.status==='assigned')a.push({v:'accept',t:'接单（待接单）'});
+  if(o.status==='material_received')a.push({v:'confirmMaterial',t:'确认领料（待领料）'});
+  if(o.status==='producing'||o.status==='rework')a.push({v:'returnGoods',t:'交回登记（生产中/返工）'});
+  return a;
+}
+function proxyBelongHtml(o){
+  return '归属绣娘 <b>'+esc(uname(o.assignedTo))+'</b>｜当前状态 '+STATUS[o.status].t+'｜'+esc(o.id)+'<br>归属绣娘不可更改，复核由该绣娘（或管理员）完成。';
+}
+
+/* 图片：本地压缩 / 模拟生成 */
+function compressImage(file){
+  return new Promise(function(res){
+    var fr=new FileReader();
+    fr.onload=function(){var img=new Image();img.onload=function(){
+      var w=Math.min(480,img.width),h=Math.round(img.height*w/img.width);
+      var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+      try{res(c.toDataURL('image/jpeg',0.62));}catch(e){res(null);}
+    };img.onerror=function(){res(null);};img.src=fr.result;};
+    fr.onerror=function(){res(null);};fr.readAsDataURL(file);
+  });
+}
+function genPhoto(o,note){
+  var c=document.createElement('canvas');c.width=480;c.height=300;var x=c.getContext('2d');
+  var g=x.createLinearGradient(0,0,480,300);g.addColorStop(0,'#f3e7cf');g.addColorStop(1,'#d6bd94');x.fillStyle=g;x.fillRect(0,0,480,300);
+  x.strokeStyle='#9c3535';x.lineWidth=5;x.beginPath();x.arc(240,128,84,0,Math.PI*2);x.stroke();
+  x.strokeStyle='rgba(47,87,84,.75)';x.lineWidth=2;
+  for(var i=0;i<10;i++){var a=i*Math.PI/5;x.beginPath();x.moveTo(240,128);x.quadraticCurveTo(240+Math.cos(a+.3)*70,128+Math.sin(a+.3)*70,240+Math.cos(a)*78,128+Math.sin(a)*78);x.stroke();}
+  x.fillStyle='#b6873c';x.beginPath();x.arc(240,128,14,0,Math.PI*2);x.fill();
+  x.fillStyle='rgba(255,253,246,.9)';x.fillRect(0,244,480,56);
+  x.fillStyle='#3b2b20';x.font='bold 16px sans-serif';x.fillText('现场留痕 · '+(o?o.id:'—'),12,266);
+  x.font='12px sans-serif';x.fillText(fmtFull(nowISO())+' · '+(note||'跟单员现场拍照').slice(0,26),12,288);
+  try{return c.toDataURL('image/jpeg',0.72);}catch(e){return '';}
+}
+
+/* ============================ 复核 / 异常 / 详情 ============================ */
+function reviewProxy(id,ok){
+  var r=db.proxyOps.find(function(p){return p.id===id;});if(!r)return;
+  assert(r.status==='pending_review','该记录已复核');
+  r.status=ok?'confirmed':'rejected';r.reviewedBy=actor().name;r.reviewedAt=nowISO();
+  var o=findOrder(r.orderId);if(o)o.pendingProxy=(o.pendingProxy||[]).filter(function(x){return x!==id;});
+  addLog('代操作复核',r.orderId,(ok?'确认无误':'提出异议')+'｜归属 '+uname(r.belongTo)+'｜操作人 '+r.operator+'｜见证 '+r.witness);
+  if(!ok){
+    db.exceptions.unshift({id:uid('EX'),orderId:r.orderId,type:'代操作异议',desc:'归属绣娘对 '+r.operator+' 代执行的「'+ACTION_NAME[r.action]+'」提出异议（见证方式：'+r.witness+'），请管理员核实。',by:actor().name,ts:nowISO(),status:'待处理',reply:''});
+  }
+  save();render();toast(ok?'已确认代操作无误':'已提交异议，等待管理员处理');
+}
+function handleException(id){
+  var e=db.exceptions.find(function(x){return x.id===id;});if(!e)return;
+  openForm('处理异常 · '+e.type,[
+    {type:'info',value:esc(e.orderId)+'｜'+esc(e.by)+'｜'+esc(fmt(e.ts))+'<br>'+esc(e.desc)},
+    {name:'reply',label:'处理意见',type:'textarea',required:true,ph:'如：已补料，交期顺延 1 天'}
+  ],function(d){e.status='已处理';e.reply=d.reply;e.handledBy=actor().name;e.handledAt=nowISO();addLog('异常处理',e.orderId,e.type+' 已处理：'+d.reply);save();render();toast('异常已处理');},'标记已处理');
+}
+function orderDetail(id){
+  var o=findOrder(id);if(!o)return;
+  var h=(o.history||[]).slice().reverse().map(function(x){return '<div class="titem"><b>'+esc(x.action)+'</b> · '+esc(fmt(x.ts))+' · '+esc(x.by)+'<br>'+esc(x.detail)+'</div>';}).join('');
+  var qc=(o.qcRecords||[]).slice().reverse().map(function(q){return '<div class="kv"><span>'+esc(fmt(q.ts))+' '+(q.result==='pass'?'✅ 通过':'↩️ 返工')+'</span><span>'+esc(q.note||'—')+(q.defect?'（'+esc(q.defect)+'）':'')+'</span></div>';}).join('')||'<div class="notice">暂无质检记录</div>';
+  var px=db.proxyOps.filter(function(p){return p.orderId===o.id;}).map(function(p){return '<div class="kv"><span>'+esc(p.operator)+' 代操作</span><span>'+esc(ACTION_NAME[p.action])+' / '+esc(p.witness)+' / '+esc(p.status==='pending_review'?'待复核':(p.status==='confirmed'?'已确认':'已异议'))+'</span></div>';}).join('')||'<div class="notice">无代操作记录</div>';
+  var ph=db.photos.filter(function(p){return p.orderId===o.id;}).slice(0,2).map(function(p){return '<img class="thumb" style="margin-bottom:6px" src="'+p.dataUrl+'" alt="现场留痕">';}).join('');
+  var html='<div class="card"><div class="row"><span class="oid">'+esc(o.id)+'</span>'+chip(o.status)+'</div><div class="name">'+esc(o.title)+'</div>'+
+    '<div class="meta">'+esc(o.pattern||'—')+' · '+esc(o.needle||'—')+'<br>件数 <b>'+o.qty+'</b> ｜ 单价 <b>'+money(o.unitPrice)+'</b> ｜ 归属 <b>'+esc(uname(o.assignedTo))+'</b><br>交期 <b>'+esc(fmt(o.deadline))+'</b> ｜ '+cdHtml(o.deadline,o.status==='settled')+'<br>用料：'+esc(o.material||'—')+'</div>'+
+    (db.settings.role==='admin'?'<div class="btnrow" style="margin-top:8px"><button class="btn mini" data-act="do" data-do="editOrder" data-id="'+esc(o.id)+'">✏️ 修改订单信息</button><button class="btn mini danger" data-act="delOrder" data-id="'+esc(o.id)+'">🗑 删除订单</button></div>':'')+'</div>'+
+    '<div class="sec">关键信息</div><div class="card">'+
+    (o.materialInfo?'<div class="kv"><span>发料</span><span>'+esc(o.materialInfo.batch)+' · '+esc(o.materialInfo.detail)+'</span></div>':'')+
+    (o.sendInfo?'<div class="kv"><span>扫码放料</span><span>'+esc(o.sendInfo.scanCode||'—')+' · '+esc(o.sendInfo.by)+' · '+esc(fmt(o.sendInfo.ts))+'</span></div>':'')+
+    (o.receiveInfo?'<div class="kv"><span>扫码收料</span><span>'+esc(o.receiveInfo.by)+' · '+esc(fmt(o.receiveInfo.ts))+'</span></div>':'')+
+    (o.returnInfo?'<div class="kv"><span>交回</span><span>'+o.returnInfo.qty+' 件 · '+esc(o.returnInfo.by)+'</span></div>':'')+
+    (o.recoverInfo?'<div class="kv"><span>回收</span><span>'+o.recoverInfo.qty+' 件 · '+esc(o.recoverInfo.note||'—')+'</span></div>':'')+
+    (o.settlement?'<div class="kv"><span>结算实发</span><span style="color:#9c3535">'+money(o.settlement.amount)+'</span></div>':'')+
+    (o.settlement?'<div class="kv"><span>已付 / 待付</span><span><b style="color:var(--green)">'+money(paidFor(o.id))+'</b> / <b style="color:var(--red)">'+money(wageOf(o).left)+'</b></span></div>':'')+
+    (function(){var ps=(db.payments||[]).filter(function(p){return p.orderId===o.id;});return ps.length?'<div class="notice" style="margin-top:6px">付款记录：'+ps.map(function(p){return esc(fmt(p.ts))+' '+esc(p.by)+' '+money(p.amount);}).join('；')+'</div>':'';})()+
+    '<div class="kv"><span>返工次数 / 进度</span><span>'+(o.reworkCount||0)+' 次 / '+(o.progress||0)+'%</span></div></div>'+
+    '<div class="sec">质检结果</div><div class="card">'+qc+'</div>'+
+    '<div class="sec">代操作四要素</div><div class="card">'+px+'</div>'+
+    (ph?'<div class="sec">现场照片</div><div class="card">'+ph+'</div>':'')+
+    '<div class="sec">订单轨迹（留痕）</div><div class="card"><div class="tline">'+(h||'<div class="notice">暂无轨迹</div>')+'</div></div>';
+  openDetail('绣品单详情',html);
+}
+
+/* ============================ 渲染 ============================ */
+var TABS={
+  admin:[['home','🏠','工作台'],['board','⏰','临期'],['settle','💰','结算'],['trace','📜','留痕']],
+  tracker:[['receive','📥','收料'],['site','🧵','现场'],['proxy','🤝','代操作'],['trace','📜','留痕']],
+  embroiderer:[['mine','📋','我的单'],['clock','⏳','倒计时'],['result','✅','质检交回'],['fruit','🌾','果实']]
+};
+function tabName(){var t=TABS[db.settings.role].find(function(x){return x[0]===ui.tab;});return t?t[2]:'工作台';}
+function render(){
+  var r=db.settings.role,a=actor();
+  $('#barTitle').textContent=tabName();
+  $('#barSub').textContent=ROLE_NAME[r]+' · '+a.name+' ｜ 数据仅存本机浏览器';
+  $('#roleBadge').textContent=ROLE_NAME[r];
+  $('#tabbar').innerHTML=TABS[r].map(function(t){return '<button class="tab'+(ui.tab===t[0]?' on':'')+'" data-act="tab" data-tab="'+t[0]+'"><span class="ic">'+t[1]+'</span>'+t[2]+'</button>';}).join('');
+  var v=$('#view'),top=v.scrollTop;
+  if(ui.tab==='home')v.innerHTML=viewAdminHome();
+  else if(ui.tab==='board')v.innerHTML=viewBoard();
+  else if(ui.tab==='settle')v.innerHTML=viewSettle();
+  else if(ui.tab==='trace')v.innerHTML=viewTrace();
+  else if(ui.tab==='receive')v.innerHTML=viewReceive();
+  else if(ui.tab==='site')v.innerHTML=viewSite();
+  else if(ui.tab==='proxy')v.innerHTML=viewProxy();
+  else if(ui.tab==='mine')v.innerHTML=viewMine();
+  else if(ui.tab==='clock')v.innerHTML=viewClock();
+  else if(ui.tab==='result')v.innerHTML=viewResult();
+  else if(ui.tab==='fruit')v.innerHTML=viewFruit();
+  v.scrollTop=top;
+  updateRemindDot();
+}
+function orderCard(o,actions,extra){
+  var warn=(o.status!=='settled'&&cd(o.deadline).ms<24*3600000)?'border-left:3px solid var(--cinnabar)':'';
+  var flash=ui.flashId===o.id;
+  if(flash)warn='border:2px solid var(--gold);box-shadow:0 0 0 3px #f6e6c2';
+  return '<div class="card" data-flash="'+esc(o.id)+'" style="'+warn+'">'+(flash?'<div class="chip green" style="margin-bottom:6px">✨ 刚刚创建</div>':'')+'<div class="row"><span class="oid">'+esc(o.id)+' <button class="btn mini" data-act="detail" data-id="'+esc(o.id)+'" style="padding:2px 6px">详情</button></span>'+chip(o.status)+'</div>'+
+    '<div class="name">'+esc(o.title)+'</div><div class="meta">'+esc(o.pattern||'')+' · '+o.qty+' 件 · '+esc(o.needle||'')+'<br>归属 <b>'+esc(uname(o.assignedTo))+'</b> ｜ 交期 '+esc(fmt(o.deadline))+' ｜ '+cdHtml(o.deadline,o.status==='settled')+'</div>'+
+    (extra||'')+
+    ((o.pendingProxy&&o.pendingProxy.length)?'<div class="banner warn" style="margin:8px 0 0;padding:6px 9px">🤝 有 '+o.pendingProxy.length+' 条代操作待复核</div>':'')+
+    (actions&&actions.length?'<div class="btnrow">'+actions.map(function(b){return '<button class="btn mini '+(b.cls||'')+'" data-act="do" data-do="'+b.act+'" data-id="'+esc(o.id)+'">'+esc(b.label)+'</button>';}).join('')+'</div>':'')+
+    '</div>';
+}
+function adminActions(o){
+  var m={pending_assign:[{act:'assign',label:'派单',cls:'pri'}],
+    assigned:[{act:'assign',label:'改派',cls:''},{act:'scanSend',label:'扫码放料',cls:'pri'},{act:'sendMaterial',label:'登记发料',cls:''},{act:'urge',label:'催接单',cls:''}],
+    accepted:[{act:'scanSend',label:'扫码放料',cls:'pri'},{act:'sendMaterial',label:'登记发料',cls:''}],
+    material_sent:[{act:'urge',label:'催收料',cls:''}],
+    material_received:[{act:'startProduce',label:'登记开工',cls:'pri'}],
+    producing:[{act:'progress',label:'登记进度',cls:'pri'},{act:'urge',label:'催交回',cls:''}],
+    returned:[{act:'recover',label:'回收登记',cls:'pri'}],
+    recovered:[{act:'qcPass',label:'质检通过',cls:'pri'},{act:'qcRework',label:'质检返工',cls:'danger'}],
+    rework:[{act:'urge',label:'催返工',cls:''}],
+    passed:[{act:'settle',label:'结算',cls:'gold'}],
+    settled:[]};
+  return m[o.status]||[];
+}
+function viewUserManage(){
+  var groups=[{role:'embroiderer',icon:'🧵'},{role:'tracker',icon:'🧭'},{role:'admin',icon:'🧑‍💼'}];
+  var open=!ui.userFold;
+  var h='<div class="sec"><span class="foldhead'+(open?' open':'')+'" data-act="toggleUsers">🧵 绣娘与人员 <span class="arw">▶</span></span><span class="num">'+db.users.length+' 人</span></div>';
+  h+='<div class="card"><div class="btnrow" style="margin:0 0 8px"><button class="btn mini pri" data-act="do" data-do="addEmbroiderer">＋ 添加绣娘</button><button class="btn mini" data-act="do" data-do="addUser">＋ 其他人员</button></div>';
+  h+='<div class="foldbody'+(open?'':' hide')+'">';
+  if(!db.users.some(function(u){return u.role==='embroiderer';}))h+='<div class="banner red">目前还没有绣娘，派单时选不到人。点上方「＋ 添加绣娘」先建一位。</div>';
+  groups.forEach(function(g){
+    var list=db.users.filter(function(u){return u.role===g.role;});
+    h+='<div class="notice" style="margin:8px 0 2px;font-weight:700;color:var(--jade)">'+g.icon+' '+ROLE_NAME[g.role]+'（'+list.length+'）</div>';
+    if(!list.length){h+='<div class="notice" style="padding-left:4px">— 暂无 —</div>';return;}
+    h+=list.map(function(u){
+      var built=(u.id==='A01');
+      var on=db.orders.filter(function(o){return o.assignedTo===u.id&&o.status!=='settled';}).length;
+      var earned=yuan(db.orders.filter(function(o){return o.assignedTo===u.id&&o.settlement;}).reduce(function(s,o){return s+toCents(o.settlement.amount);},0));
+      var refs=db.orders.filter(function(x){return x.assignedTo===u.id;}).length+db.proxyOps.filter(function(p){return p.belongTo===u.id;}).length+(db.payments||[]).filter(function(p){return p.embroidererId===u.id;}).length;
+      var info=u.role==='embroiderer'?('在制 '+on+' 单 ｜ 已结 '+money(earned)):(refs?('关联 '+refs+' 条'):'无业务记录');
+      var ops='<button class="btn mini" data-act="editUser" data-id="'+esc(u.id)+'" style="padding:2px 6px">改</button> '+(built?'<span class="oid">内置</span>':'<button class="btn mini danger" data-act="delUser" data-id="'+esc(u.id)+'" style="padding:2px 6px">删</button>');
+      return '<div class="kv"><span>'+g.icon+' <b>'+esc(u.name)+'</b> <span class="oid">'+esc(u.id)+'</span></span><span>'+info+' ｜ '+ops+'</span></div>';
+    }).join('');
+  });
+  h+='<div class="divider"></div><div class="notice">内置管理员不可删除；删除有业务记录的人员时，历史留痕保留但显示为「未指派」。</div></div></div>';
+  return h;
+}
+function viewAdminHome(){
+  var act=activeOrders(),px=db.proxyOps.filter(function(p){return p.status==='pending_review';}).length,ex=db.exceptions.filter(function(e){return e.status==='待处理';}).length;
+  var list=act.filter(function(o){return ui.adminFilter==='all'||o.status===ui.adminFilter;});
+  var h='<div class="stats"><div class="stat"><div class="n">'+act.length+'</div><div class="l">在制单数</div></div><div class="stat"><div class="n">'+db.orders.filter(function(o){return o.status==='passed';}).length+'</div><div class="l">待结算</div></div><div class="stat"><div class="n">'+px+'</div><div class="l">代操作待复核</div></div><div class="stat"><div class="n">'+ex+'</div><div class="l">待处理异常</div></div></div>'+
+    '<div class="btnrow" style="margin-top:10px"><button class="btn" data-act="do" data-do="newOrder">＋ 新建绣品单 / 派单</button><button class="btn mini pri" data-act="do" data-do="addEmbroiderer" style="padding:10px 12px">＋ 添加绣娘</button></div>'+
+    viewUserManage()+
+    '<div class="sec">全部在制绣品<span class="num">'+list.length+' 单</span></div>'+
+    '<div class="filters"><select data-filter="adminFilter">'+[['all','全部状态']].concat(Object.keys(STATUS).filter(function(k){return k!=='settled';}).map(function(k){return [k,STATUS[k].t];})).map(function(x){return '<option value="'+x[0]+'"'+(ui.adminFilter===x[0]?' selected':'')+'>'+esc(x[1])+'</option>';}).join('')+'</select></div>';
+  var showAll=!ui.orderFold,rest=Math.max(0,list.length-3);
+  var shown=(ui.orderFold&&rest>0)?list.slice(0,3):list;
+  h+=shown.length?shown.map(function(o){return orderCard(o,adminActions(o),(o.progress?'<div class="meta">生产进度 <b>'+o.progress+'%</b></div>':''));}).join(''):'<div class="empty"><span class="e">🧺</span>该状态下暂无绣品单</div>';
+  if(rest>0)h+='<button class="btn ghost block" data-act="toggleOrders" style="margin-top:6px">'+(showAll?'▲ 收起（仅看前 3 单）':'▼ 展开其余 '+rest+' 单')+'</button>';
+  return h+footNote();
+}
+function viewBoard(){
+  var act=activeOrders().sort(function(a,b){return new Date(a.deadline)-new Date(b.deadline);});
+  var g={'逾期':[],'24小时内':[],'48小时内':[],'7天内':[],'更远期':[]};
+  act.forEach(function(o){var ms=cd(o.deadline).ms;if(ms<0)g['逾期'].push(o);else if(ms<86400000)g['24小时内'].push(o);else if(ms<172800000)g['48小时内'].push(o);else if(ms<604800000)g['7天内'].push(o);else g['更远期'].push(o);});
+  var h='<div class="banner info">⏰ <b>临期看板</b>：按交期倒排，仅显示未结算绣品。逾期 / 24h / 48h 分级预警，管理员可直接催办或推进流程。</div>'+
+    '<div class="stats"><div class="stat"><div class="n" style="color:#c0392b">'+g['逾期'].length+'</div><div class="l">已逾期</div></div><div class="stat"><div class="n" style="color:#b6873c">'+g['24小时内'].length+'</div><div class="l">24h 临期</div></div><div class="stat"><div class="n">'+g['48小时内'].length+'</div><div class="l">48h 关注</div></div></div>';
+  Object.keys(g).forEach(function(k){
+    h+='<div class="sec">'+k+'<span class="num">'+g[k].length+' 单</span></div>';
+    h+=g[k].length?g[k].map(function(o){return orderCard(o,adminActions(o).concat([{act:'urge',label:'催办',cls:''}]));}).join(''):'<div class="empty" style="padding:12px">— 无 —</div>';
+  });
+  return h+footNote();
+}
+function viewSettle(){
+  var wait=db.orders.filter(function(o){return o.status==='passed';}),done=db.orders.filter(function(o){return o.status==='settled';});
+  var dueC=0,paidC=0,leftC=0;done.forEach(function(o){var w=wageOf(o);dueC+=toCents(w.due);paidC+=toCents(w.paid);leftC+=toCents(w.left);});
+  var tot={due:yuan(dueC),paid:yuan(paidC),left:yuan(leftC)};
+  var h='<div class="card" style="background:linear-gradient(135deg,#fdf3e3,#f7e7cd)"><div class="meta">全坊绣品工费总览</div><div style="font-size:26px;font-weight:800;color:var(--cinnabar);margin:4px 0">'+money(tot.due)+'</div><div class="meta">累计结算 '+done.length+' 单 · '+done.reduce(function(s,o){return s+(o.settlement&&o.settlement.qty||0);},0)+' 件绣品</div>'+
+    '<div class="stats" style="margin-top:10px"><div class="stat"><div class="n" style="color:var(--green)">'+money(tot.paid)+'</div><div class="l">已付工费</div></div><div class="stat"><div class="n" style="color:var(--red)">'+money(tot.left)+'</div><div class="l">待付工费</div></div></div></div>'+
+    '<div class="sec">待结算（质检通过）<span class="num">'+wait.length+' 单</span></div>';
+  h+=wait.length?wait.map(function(o){return orderCard(o,[{act:'settle',label:'结算工费',cls:'gold'}]);}).join(''):'<div class="empty"><span class="e">💰</span>暂无待结算绣品</div>';
+  h+='<div class="sec">绣娘支付情况<span class="num">'+Object.keys(done.reduce(function(m,o){m[o.assignedTo||'']=1;return m;},{})).length+' 位绣娘</span></div>';
+  var byEmb={};done.forEach(function(o){var k=o.assignedTo||'';(byEmb[k]=byEmb[k]||[]).push(o);});
+  var keys=Object.keys(byEmb);
+  h+=keys.length?keys.map(function(k){
+    var list=byEmb[k],s=wageSummary(k);
+    var open=!!ui.settleOpen[k];
+    var rows=list.map(function(o){
+      var w=wageOf(o);
+      var pays=(db.payments||[]).filter(function(p){return p.orderId===o.id;});
+      var pl=pays.map(function(p){return '<div class="kv"><span>'+esc(fmt(p.ts))+' · '+esc(p.by)+(p.note?' · '+esc(p.note):'')+'</span><span>'+money(p.amount)+'</span></div>';}).join('');
+      return '<div style="border-top:1px dashed var(--line);padding-top:8px;margin-top:8px">'+
+        '<div class="row"><span class="oid">'+esc(o.id)+'</span><span class="meta" style="font-size:11px">结算 '+esc(fmt(o.settlement.ts))+'</span></div>'+
+        '<div class="meta" style="margin-top:2px">'+esc(o.title)+'<br>应发 '+money(w.due)+' ｜ 已付 '+money(w.paid)+' ｜ <b style="color:var(--red)">未付 '+money(w.left)+'</b></div>'+
+        (pl?'<div style="margin-top:4px">'+pl+'</div>':'')+
+        '<div class="btnrow">'+(w.left>0.001?'<button class="btn mini gold" data-act="do" data-do="payWage" data-id="'+esc(o.id)+'">登记付款</button>':'<span class="chip green">已付清</span>')+'<button class="btn mini" data-act="do" data-do="resettle" data-id="'+esc(o.id)+'">修正结算</button></div>'+
+      '</div>';
+    }).join('');
+    return '<div class="card"><div class="foldhead'+(open?' open':'')+'" style="width:100%" data-act="toggleSettle" data-id="'+esc(k)+'"><span class="name" style="margin:0">🧵 '+esc(uname(k))+'</span><span class="chip teal">'+list.length+' 单</span><span class="arw" style="margin-left:auto">▶</span></div>'+
+      '<div class="stats" style="margin-top:8px"><div class="stat"><div class="n" style="font-size:15px">'+money(s.due)+'</div><div class="l">应发</div></div><div class="stat"><div class="n" style="font-size:15px;color:var(--green)">'+money(s.paid)+'</div><div class="l">已付</div></div><div class="stat"><div class="n" style="font-size:15px;color:var(--red)">'+money(s.left)+'</div><div class="l">未付</div></div></div>'+
+      '<div class="foldbody'+(open?'':' hide')+'" style="margin-top:6px">'+rows+'</div>'+
+      (!open&&list.length>1?'<div class="notice" style="margin-top:6px">点上方标题展开 '+list.length+' 笔交易明细</div>':'')+'</div>';
+  }).join(''):'<div class="empty"><span class="e">💰</span>暂无已结算绣品</div>';
+  return h+footNote();
+}
+function logListHtml(){
+  var q=ui.logQuery.toLowerCase(),lr=ui.logRole,lo=ui.logOrder;
+  var list=db.logs.filter(function(l){
+    return (!q||(l.action+l.actor+l.detail+l.orderId).toLowerCase().indexOf(q)>=0)&&(lr==='all'||l.role===lr)&&(lo==='all'||l.orderId===lo);
+  });
+  if(!list.length)return '<div class="empty"><span class="e">📜</span>没有匹配的留痕记录</div>';
+  return list.map(function(l){
+    var ex=l.extra?'<div class="lx">'+Object.keys(l.extra).map(function(k){return esc(k)+'：'+esc(l.extra[k]);}).join(' ｜ ')+'</div>':'';
+    return '<div class="logitem"><div class="lh"><span><b>'+esc(l.actor)+'</b> · '+esc(l.roleName||ROLE_NAME[l.role]||'')+' · '+esc(l.action)+'</span><span>'+esc(fmtFull(l.ts))+'</span></div><div class="ld">'+(l.orderId?'<span class="oid">'+esc(l.orderId)+'</span> ':'')+esc(l.detail)+'</div>'+ex+'</div>';
+  }).join('');
+}
+function proxyListHtml(scope){
+  var list=db.proxyOps.filter(function(p){return scope==='mine'?p.belongTo===db.settings.embroidererId:true;});
+  if(!list.length)return '<div class="empty"><span class="e">🤝</span>暂无代操作记录</div>';
+  return list.map(function(p){
+    var st=p.status==='pending_review'?'<span class="chip amber">待复核</span>':(p.status==='confirmed'?'<span class="chip green">已确认</span>':'<span class="chip red">已异议</span>');
+    var can=p.status==='pending_review'&&(db.settings.role==='admin'||(db.settings.role==='embroiderer'&&p.belongTo===db.settings.embroidererId));
+    return '<div class="card"><div class="row"><span class="oid">'+esc(p.id)+'</span>'+st+'</div>'+
+      '<div class="name" style="font-size:13.5px">'+esc(ACTION_NAME[p.action])+' · '+esc(p.orderId)+'</div>'+
+      '<div class="meta">归属绣娘 <b>'+esc(uname(p.belongTo))+'</b><br>实际操作人 <b>'+esc(p.operator)+'</b><br>见证方式 <b>'+esc(p.witness)+'</b> ｜ '+esc(p.witnessDetail||'—')+'<br>代操作原因：'+esc(p.note||'—')+'<br>登记 '+esc(fmtFull(p.createdAt))+(p.reviewedBy?' ｜ 复核人 '+esc(p.reviewedBy):'')+'</div>'+
+      (can?'<div class="btnrow"><button class="btn mini pri" data-act="proxyReview" data-id="'+esc(p.id)+'" data-ok="1">确认无误</button><button class="btn mini danger" data-act="proxyReview" data-id="'+esc(p.id)+'" data-ok="0">提出异议</button></div>':'')+
+      '</div>';
+  }).join('');
+}
+function viewTrace(){
+  var pending=db.proxyOps.filter(function(p){return p.status==='pending_review';}).length;
+  var exc=db.exceptions.slice().sort(function(a,b){return new Date(b.ts)-new Date(a.ts);});
+  var opts='<option value="all">全部绣品单</option>'+db.orders.map(function(o){return '<option value="'+esc(o.id)+'"'+(ui.logOrder===o.id?' selected':'')+'>'+esc(o.id)+'</option>';}).join('');
+  var h='<div class="banner info">📜 所有动作<b>只增不改</b>：建单、派单、扫码放料、扫码收料、确认领料、代操作、质检、结算均留痕；代操作额外记录归属绣娘、实际操作人、见证方式与复核状态。</div>'+
+    '<div class="sec">操作留痕<span class="num">'+db.logs.length+' 条</span></div>'+
+    '<div class="filters"><input data-filter="logQuery" value="'+esc(ui.logQuery)+'" placeholder="搜索动作/操作人/单号"><select data-filter="logRole"><option value="all">全部角色</option>'+['admin','tracker','embroiderer'].map(function(r){return '<option value="'+r+'"'+(ui.logRole===r?' selected':'')+'>'+ROLE_NAME[r]+'</option>';}).join('')+'</select></div>'+
+    '<div class="filters"><select data-filter="logOrder">'+opts+'</select></div><div id="logList">'+logListHtml()+'</div>'+
+    '<div class="sec">代操作复核<span class="num">待复核 '+pending+' 条</span></div>'+proxyListHtml('all')+
+    '<div class="sec">现场异常<span class="num">'+exc.length+' 条</span></div>'+
+    (exc.length?exc.map(function(e){return '<div class="card"><div class="row"><span class="chip '+(e.status==='待处理'?'red':'green')+'">'+esc(e.status)+'</span><span class="oid">'+esc(e.orderId)+'</span></div><div class="name" style="font-size:13.5px">'+esc(e.type)+'</div><div class="meta">'+esc(e.desc)+'<br>上报 '+esc(e.by)+' · '+esc(fmt(e.ts))+(e.reply?'<br><b>处理：</b>'+esc(e.reply):'')+'</div>'+(db.settings.role==='admin'&&e.status==='待处理'?'<div class="btnrow"><button class="btn mini pri" data-act="handleEx" data-id="'+esc(e.id)+'">处理</button></div>':'')+'</div>';}).join(''):'<div class="empty">暂无异常</div>')+
+    (db.settings.role==='admin'?'<div class="sec">数据管理</div><div class="card"><div class="notice">全部数据保存在当前浏览器 localStorage，不上传服务器。清理浏览器数据会丢失，请先导出备份。换手机 / 换浏览器时，用「导出备份」+「导入备份」迁移。</div><div class="btnrow"><button class="btn mini pri" data-act="exportData">导出 JSON 备份</button><button class="btn mini" data-act="importData">导入 JSON 备份</button><button class="btn mini danger" data-act="clearData">清空演示数据</button><button class="btn mini" data-act="resetData">恢复演示数据</button></div><input id="importFile" type="file" accept="application/json,.json" class="hidden"></div>':'');
+  return h+footNote();
+}
+function viewReceive(){
+  var today=''+new Date().getFullYear()+pad(new Date().getMonth()+1)+pad(new Date().getDate());
+  var sendWait=db.orders.filter(function(o){return o.status==='assigned'||o.status==='accepted';});
+  var wait=db.orders.filter(function(o){return o.status==='material_sent';});
+  var sent=db.orders.filter(function(o){return o.sendInfo;}).slice(0,6);
+  var recent=db.orders.filter(function(o){return o.receiveInfo;}).slice(0,6);
+  var h='<div class="banner info">📦 <b>扫码放料</b>：派单后仓库扫码把料发给绣娘，绣娘确认领料后开工。下方「扫码收料」用于已登记发料、待核对收料的绣品。</div>'+
+    '<div class="card"><div class="field" style="margin-bottom:8px"><label>模拟扫码枪输入 · 放料</label><input id="sendScanInput" placeholder="输入绣品单号，如 XP'+today+'08"></div><div class="btnrow" style="margin-top:0"><button class="btn mini pri" data-act="sendScanInput">📷 扫码放料</button><button class="btn mini" data-act="sendScanAuto">扫描下一件待放料</button></div></div>'+
+    '<div class="sec">待放料<span class="num">'+sendWait.length+' 单</span></div>';
+  h+=sendWait.length?sendWait.map(function(o){return orderCard(o,[{act:'scanSend',label:'扫码放料',cls:'pri'}],'<div class="meta">归属绣娘 <b>'+esc(uname(o.assignedTo))+'</b> ｜ '+esc(o.material||'')+'</div>');}).join(''):'<div class="empty"><span class="e">📦</span>暂无待放料绣品</div>';
+  h+='<div class="sec">最近放料记录</div>'+(sent.length?sent.map(function(o){return '<div class="card tight"><div class="row"><span class="oid">'+esc(o.id)+'</span>'+chip(o.status)+'</div><div class="meta">'+esc(o.title)+'｜扫码 '+(o.sendInfo?esc(o.sendInfo.scanCode||'—'):'—')+'<br>放料人 '+esc(o.sendInfo?o.sendInfo.by:'—')+' · '+esc(fmt(o.sendInfo?o.sendInfo.ts:''))+'</div></div>';}).join(''):'')+
+    '<div class="divider"></div>'+
+    '<div class="banner info">📥 <b>扫码收料</b>：输入单号后扫码，或直接从待收料清单点「扫码收料」。登记后绣娘端即可确认领料。</div>'+
+    '<div class="card"><div class="field" style="margin-bottom:8px"><label>模拟扫码枪输入 · 收料</label><input id="scanInput" placeholder="输入绣品单号，如 XP'+today+'02"></div><div class="btnrow" style="margin-top:0"><button class="btn mini pri" data-act="scanInput">📷 模拟扫码</button><button class="btn mini" data-act="scanAuto">扫描下一件待收料</button></div></div>'+
+    '<div class="sec">待收料<span class="num">'+wait.length+' 单</span></div>';
+  h+=wait.length?wait.map(function(o){return orderCard(o,[{act:'scanReceive',label:'扫码收料',cls:'pri'}],'<div class="meta">发料批次 <b>'+esc(o.materialInfo?o.materialInfo.batch:'—')+'</b> ｜ '+esc(o.material||'')+'</div>');}).join(''):'<div class="empty"><span class="e">📦</span>暂无待收料绣品</div>';
+  h+='<div class="sec">最近收料记录</div>'+(recent.length?recent.map(function(o){return '<div class="card tight"><div class="row"><span class="oid">'+esc(o.id)+'</span>'+chip(o.status)+'</div><div class="meta">'+esc(o.title)+'｜扫码 '+(o.receiveInfo?esc(o.receiveInfo.scanCode||'—'):'—')+'<br>收料人 '+esc(o.receiveInfo?o.receiveInfo.by:'—')+' · '+esc(fmt(o.receiveInfo?o.receiveInfo.ts:''))+'</div></div>';}).join(''):'');
+  return h+footNote();
+}
+function viewSite(){
+  var h='<div class="btnrow" style="margin-bottom:10px"><button class="btn" data-act="do" data-do="photo">📷 现场拍照留痕</button><button class="btn ghost" data-act="do" data-do="exception">⚠️ 提交异常</button></div>'+
+    '<div class="banner info">照片压缩后存本机；未选图片时自动生成带单号与时间水印的模拟留痕图。</div>'+
+    '<div class="sec">现场照片<span class="num">'+db.photos.length+' 张</span></div>';
+  h+=db.photos.length?'<div class="grid2">'+db.photos.map(function(p){return '<div class="card" style="padding:6px;margin:0"><img class="thumb" src="'+p.dataUrl+'" alt="现场留痕"><div class="meta" style="font-size:10.5px;padding:5px 2px 0">'+esc(p.orderId)+'<br>'+esc(p.note)+'<br>'+esc(p.by)+' · '+esc(fmt(p.ts))+'</div></div>';}).join('')+'</div>':'<div class="empty"><span class="e">📷</span>还没有现场照片，点上方按钮记录第一张</div>';
+  var ex=db.exceptions;
+  h+='<div class="sec">异常上报<span class="num">'+ex.length+' 条</span></div>'+(ex.length?ex.map(function(e){return '<div class="card"><div class="row"><span class="chip '+(e.status==='待处理'?'red':'green')+'">'+esc(e.status)+'</span><span class="oid">'+esc(e.orderId)+'</span></div><div class="name" style="font-size:13px">'+esc(e.type)+'</div><div class="meta">'+esc(e.desc)+'<br>'+esc(e.by)+' · '+esc(fmt(e.ts))+'</div></div>';}).join(''):'');
+  return h+footNote();
+}
+function viewProxy(){
+  var h='<div class="banner warn">🤝 <b>无手机代操作</b>：绣娘不便操作时由跟单员代办，业务即时生效，但必须登记归属绣娘、实际操作人、见证方式，并标记<b>待复核</b>；归属绣娘或管理员复核后闭环。</div>'+
+    '<button class="btn block" style="margin:0 0 4px" data-act="do" data-do="proxy">＋ 发起代操作</button>'+
+    '<div class="sec">代操作记录<span class="num">'+db.proxyOps.length+' 条</span></div>'+proxyListHtml('all');
+  return h+footNote();
+}
+function embroidererActions(o){
+  var m={assigned:[{act:'accept',label:'接单',cls:'pri'}],accepted:[],material_sent:[],material_received:[{act:'confirmMaterial',label:'确认领料',cls:'pri'}],
+    producing:[{act:'returnGoods',label:'交回登记',cls:'pri'}],rework:[{act:'returnGoods',label:'重新交回',cls:'pri'}],returned:[],recovered:[],passed:[],settled:[]};
+  return m[o.status]||[];
+}
+function myPendingProxy(){return db.proxyOps.filter(function(p){return p.belongTo===db.settings.embroidererId&&p.status==='pending_review';});}
+function viewMine(){
+  var list=myOrders().slice().sort(function(a,b){return (a.status==='settled'?1:0)-(b.status==='settled'?1:0)||new Date(a.deadline)-new Date(b.deadline);});
+  var pp=myPendingProxy();
+  var h='<div class="banner info">🧵 当前身份：<b>'+esc(actor().name)+'</b>（可在右上角切换绣娘）。接单 → 确认领料 → 交回 → 看质检结果 → 收劳动果实。</div>';
+  if(pp.length)h+='<div class="banner red">🤝 你有 <b>'+pp.length+'</b> 条代操作待复核，请到「果实」页确认或提出异议。</div>';
+  h+='<div class="sec">我的绣品单<span class="num">'+list.length+' 单</span></div>';
+  h+=list.length?list.map(function(o){var last=(o.qcRecords||[]).slice(-1)[0];var extra=last?'<div class="banner '+(last.result==='pass'?'green':'red')+'" style="margin:8px 0 0;padding:6px 9px">'+(last.result==='pass'?'✅ 质检通过':'↩️ 返工：'+esc(last.defect||last.note||''))+'</div>':'';return orderCard(o,embroidererActions(o),extra);}).join(''):'<div class="empty"><span class="e">🧺</span>暂时没有派给你的绣品单</div>';
+  return h+footNote();
+}
+function todoText(o){
+  var t={assigned:'待接单',accepted:'等待发料',material_sent:'材料在途，等待扫码收料',material_received:'待确认领料',producing:'生产中，待交回',returned:'已交回，待回收登记',recovered:'待质检',rework:'返工中，待重新交回',passed:'质检通过，待结算',settled:'已结算，劳动果实已入账'};
+  return t[o.status]||STATUS[o.status].t;
+}
+function viewClock(){
+  var list=myOrders().filter(function(o){return o.status!=='settled';}).sort(function(a,b){return new Date(a.deadline)-new Date(b.deadline);});
+  var urgent=list.filter(function(o){return cd(o.deadline).ms<24*3600000;});
+  var h='<div class="card" style="background:linear-gradient(135deg,#2f5754,#3f6f69);color:#fff8e8;border:0"><div style="font-size:12px;opacity:.85">当前身份 · '+esc(actor().name)+'</div><div style="font-size:22px;font-weight:800;margin:4px 0">'+list.length+' 单在身 · '+urgent.length+' 单临期</div><div style="font-size:11.5px;opacity:.85">倒计时每秒刷新，交期前 24 小时自动标红提醒</div></div>';
+  if(urgent.length)h+='<div class="banner red">⏰ <b>紧急提醒</b>：'+urgent.map(function(o){return esc(o.title)+'（'+cd(o.deadline).text+'）';}).join('、')+'，请优先安排。</div>';
+  else h+='<div class="banner green">✅ 暂无 24 小时内到期绣品，按交期稳步推进即可。</div>';
+  h+='<div class="sec">交期倒计时</div>';
+  h+=list.length?list.map(function(o){var c=cd(o.deadline);return '<div class="card"><div class="row"><span class="oid">'+esc(o.id)+'</span>'+chip(o.status)+'</div><div class="name">'+esc(o.title)+'</div><div style="font-size:20px;font-weight:800;margin:4px 0" class="cd '+c.level+'" data-cd="'+esc(o.deadline)+'">'+c.text+'</div><div class="meta">交期 '+esc(fmt(o.deadline))+' ｜ 当前待办 <b>'+esc(todoText(o))+'</b></div><div class="btnrow"><button class="btn mini" data-act="detail" data-id="'+esc(o.id)+'">看轨迹</button>'+embroidererActions(o).map(function(b){return '<button class="btn mini pri" data-act="do" data-do="'+b.act+'" data-id="'+esc(o.id)+'">'+esc(b.label)+'</button>';}).join('')+'</div></div>';}).join(''):'<div class="empty"><span class="e">⏳</span>暂无在制绣品</div>';
+  return h+footNote();
+}
+function viewResult(){
+  var list=myOrders().filter(function(o){return (o.qcRecords&&o.qcRecords.length)||o.status==='producing'||o.status==='rework';});
+  var h='<div class="banner info">✅ 交回登记与质检结果都在这里：返工单会写明缺陷点，可重新交回；通过的单等待结算入账。</div><div class="sec">交回与质检</div>';
+  h+=list.length?list.map(function(o){
+    var qc=(o.qcRecords||[]).slice().reverse().map(function(q){return '<div class="kv"><span>'+(q.result==='pass'?'✅ 质检通过':'↩️ 判定返工')+' · '+esc(fmt(q.ts))+'</span><span>'+esc(q.note||'—')+(q.defect?'｜缺陷：'+esc(q.defect):'')+'</span></div>';}).join('')||'<div class="notice">尚未质检</div>';
+    return '<div class="card"><div class="row"><span class="oid">'+esc(o.id)+'</span>'+chip(o.status)+'</div><div class="name">'+esc(o.title)+'</div>'+qc+
+      ((o.status==='producing'||o.status==='rework')?'<div class="btnrow"><button class="btn mini pri" data-act="do" data-do="returnGoods" data-id="'+esc(o.id)+'">'+(o.status==='rework'?'重新交回':'交回登记')+'</button></div>':'')+
+      '</div>';
+  }).join(''):'<div class="empty"><span class="e">✅</span>暂无交回 / 质检记录</div>';
+  return h+footNote();
+}
+function viewFruit(){
+  var me=db.settings.embroidererId,done=db.orders.filter(function(o){return o.assignedTo===me&&o.status==='settled';});
+  var sum=wageSummary(me);
+  var qty=done.reduce(function(s,o){return s+(o.settlement&&o.settlement.qty||0);},0);
+  var all=db.orders.filter(function(o){return o.assignedTo===me;}),rw=all.reduce(function(s,o){return s+(o.reworkCount||0);},0);
+  var qcs=all.reduce(function(s,o){return s+(o.qcRecords||[]).length;},0),pass=all.reduce(function(s,o){return s+(o.qcRecords||[]).filter(function(q){return q.result==='pass';}).length;},0);
+  var rate=qcs?Math.round(pass/qcs*100):100;
+  var ontime=done.filter(function(o){return o.settlement&&new Date(o.settlement.ts)<=new Date(o.deadline);}).length;
+  var h='<div class="card" style="background:linear-gradient(135deg,#fdf0dc,#f6e0bd);border-color:#ecd6ac"><div class="meta">'+esc(actor().name)+' 的劳动果实 · 应发总额</div><div style="font-size:28px;font-weight:800;color:var(--cinnabar);margin:4px 0">'+money(sum.due)+'</div><div class="meta">累计结算 '+done.length+' 单 · '+qty+' 件绣品</div>'+
+    '<div class="stats" style="margin-top:10px"><div class="stat"><div class="n" style="color:var(--green)">'+money(sum.paid)+'</div><div class="l">已收到</div></div><div class="stat"><div class="n" style="color:var(--red)">'+money(sum.left)+'</div><div class="l">待支付</div></div></div></div>'+
+    '<div class="stats"><div class="stat"><div class="n">'+rate+'%</div><div class="l">质检通过率</div></div><div class="stat"><div class="n">'+rw+'</div><div class="l">返工次数</div></div><div class="stat"><div class="n">'+ontime+'</div><div class="l">准时结算</div></div></div>'+
+    '<div class="card" style="margin-top:10px"><div class="meta">荣誉标记</div><div style="margin-top:6px">'+
+    (rw===0?'<span class="tagline">🏅 零返工</span>':'')+(ontime>0?'<span class="tagline">⏱ 准时交付</span>':'')+(qty>=20?'<span class="tagline">🧵 高产绣娘</span>':'')+(done.length>=1?'<span class="tagline">🌾 果实累累</span>':'')+'</div></div>'+
+    '<div class="sec">工费明细<span class="num">'+done.length+' 单</span></div>';
+  h+=done.length?done.map(function(o){
+    var w=wageOf(o),s=o.settlement||{};
+    var pays=(db.payments||[]).filter(function(p){return p.orderId===o.id;});
+    var pl=pays.map(function(p){return '<div class="kv"><span>'+esc(fmt(p.ts))+' · '+esc(p.by)+(p.note?' · '+esc(p.note):'')+'</span><span style="color:var(--green)">+'+money(p.amount)+'</span></div>';}).join('');
+    return '<div class="card"><div class="row"><span class="oid">'+esc(o.id)+'</span>'+(w.left>0.001?'<span class="chip amber">待付 '+money(w.left)+'</span>':'<span class="chip green">已付清</span>')+'</div>'+
+      '<div class="name" style="font-size:13.5px">'+esc(o.title)+' <span style="color:#9c3535;font-weight:800">'+money(w.due)+'</span></div>'+
+      '<div class="meta">'+s.qty+' 件 × '+money(s.unitPrice)+' − '+money(s.deduct)+' + '+money(s.bonus)+' ｜ '+esc(fmt(s.ts||o.createdAt))+'<br>已付 <b style="color:var(--green)">'+money(w.paid)+'</b> ｜ 待付 <b style="color:var(--red)">'+money(w.left)+'</b>'+(s.note?'<br>'+esc(s.note):'')+'</div>'+
+      (pl?'<div style="margin-top:4px">'+pl+'</div>':'')+'</div>';
+  }).join(''):'<div class="empty"><span class="e">🌾</span>还没有已结算的绣品，加油呀</div>';
+  var pp=myPendingProxy();
+  h+='<div class="sec">代操作待我复核<span class="num">'+pp.length+' 条</span></div>';
+  h+=pp.length?proxyListHtml('mine'):'<div class="empty" style="padding:14px">无需复核的代操作</div>';
+  return h+footNote();
+}
+function footNote(){return '<div class="foot">绣坊协同 · 单文件本地版<br>数据保存在当前浏览器，换浏览器 / 清缓存不互通</div>';}
+
+/* ============================ 提醒 ============================ */
+function reminders(){
+  var r=db.settings.role,a=[];
+  if(r==='admin'){
+    db.orders.filter(function(o){return o.status==='accepted';}).forEach(function(o){a.push('📦 待扫码放料：'+o.title+' · '+uname(o.assignedTo));});
+    db.proxyOps.filter(function(p){return p.status==='pending_review';}).forEach(function(p){a.push('🤝 代操作待复核：'+p.operator+' 代 '+uname(p.belongTo)+'「'+ACTION_NAME[p.action]+'」');});
+    db.exceptions.filter(function(e){return e.status==='待处理';}).forEach(function(e){a.push('⚠️ 待处理异常：'+e.type+' · '+e.orderId);});
+    var unpaid=db.orders.filter(function(o){return o.status==='settled'&&wageOf(o).left>0.001;});
+    if(unpaid.length)a.push('💰 待付工费：'+unpaid.length+' 单，合计 '+money(yuan(unpaid.reduce(function(s,o){return s+toCents(wageOf(o).left);},0))));
+    activeOrders().filter(function(o){return cd(o.deadline).ms<0;}).forEach(function(o){a.push('⏰ 逾期：'+o.title+'（'+cd(o.deadline).text+'）');});
+  }else if(r==='tracker'){
+    db.orders.filter(function(o){return o.status==='assigned'||o.status==='accepted';}).forEach(function(o){a.push('📦 待扫码放料：'+o.title+' · '+uname(o.assignedTo));});
+    db.orders.filter(function(o){return o.status==='material_sent';}).forEach(function(o){a.push('📥 待扫码收料：'+o.title+' · '+o.id);});
+    db.proxyOps.filter(function(p){return p.status==='pending_review';}).forEach(function(p){a.push('🤝 代操作待复核：'+p.orderId+'（归属 '+uname(p.belongTo)+'）');});
+  }else{
+    myOrders().forEach(function(o){
+      if(o.status==='assigned')a.push('📋 待接单：'+o.title+' · 交期 '+fmt(o.deadline));
+      if(o.status==='material_received')a.push('🧵 待确认领料：'+o.title);
+      if(o.status==='rework')a.push('↩️ 返工中：'+o.title+'，请查看缺陷点');
+      if(o.status!=='settled'&&cd(o.deadline).ms<24*3600000)a.push('⏰ '+o.title+' '+cd(o.deadline).text+'，请优先安排');
+    });
+    myPendingProxy().forEach(function(p){a.push('🤝 有代操作待你复核：'+ACTION_NAME[p.action]+' · '+p.orderId);});
+    var myLeft=wageSummary(db.settings.embroidererId).left;
+    if(myLeft>0.001)a.push('💰 你有待支付工费 '+money(myLeft)+'，可在「果实」查看');
+  }
+  return a;
+}
+function updateRemindDot(){var n=reminders().length;$('#remindDot').classList.toggle('hidden',n===0);}
+function openRemind(){
+  var a=reminders();
+  openDetail('🔔 待办提醒 · '+a.length+' 条',a.length?'<div class="card">'+a.map(function(x){return '<div class="kv" style="justify-content:flex-start"><span style="text-align:left;color:var(--ink)">'+esc(x)+'</span></div>';}).join('')+'</div>':'<div class="empty"><span class="e">🔔</span>暂无待办，一切井井有条</div>');
+}
+function openRole(){
+  var r=db.settings.role;
+  var idOpts=r==='admin'?'<option value="A01">沈总管（管理员）</option>':optUsers(r).map(function(u){return '<option value="'+esc(u.v)+'"'+(db.settings[r==='tracker'?'trackerId':'embroidererId']===u.v?' selected':'')+'>'+esc(u.t)+'</option>';}).join('');
+  var html='<div class="rolegrid">'+[['admin','🧑‍💼','管理员'],['tracker','🧭','跟单员'],['embroiderer','🧵','绣娘']].map(function(x){return '<button class="rolebtn'+(r===x[0]?' on':'')+'" data-act="setRole" data-role="'+x[0]+'"><span class="ri">'+x[1]+'</span>'+x[2]+'</button>';}).join('')+'</div>'+
+    (r==='admin'?'<div class="info">管理员为全局视角，可派单、发料、生产、回收、质检、结算、看临期看板与全部留痕。</div>':'<div class="field"><label>切换当前身份</label><select data-filter="identity">'+idOpts+'</select></div>')+
+    '<div class="notice">切换角色只改变操作视角，业务数据与留痕完全共享；当前登录身份会写入每一条操作记录。</div>'+
+    '<button class="btn ghost block" data-act="closeSheet">完成</button>';
+  openDetail('切换角色 / 身份',html);
+}
+
+/* ============================ 事件 ============================ */
+document.addEventListener('click',function(e){
+  if(e.target.id==='mask'){closeSheet();return;}
+  var el=e.target.closest('[data-act]');if(!el)return;
+  var act=el.dataset.act,id=el.dataset.id;
+  try{
+    if(act==='closeSheet'){closeSheet();}
+    else if(act==='tab'){ui.tab=el.dataset.tab;$('#view').scrollTop=0;render();}
+    else if(act==='openRole'){openRole();}
+    else if(act==='setRole'){db.settings.role=el.dataset.role;ui.tab=TABS[db.settings.role][0][0];save();closeSheet();$('#view').scrollTop=0;render();toast('已切换为 '+ROLE_NAME[db.settings.role]);}
+    else if(act==='openRemind'){openRemind();}
+    else if(act==='toggleUsers'){ui.userFold=!ui.userFold;render();}
+    else if(act==='toggleOrders'){ui.orderFold=!ui.orderFold;var v=$('#view'),t=v.scrollTop;v.innerHTML=viewAdminHome();v.scrollTop=t;}
+    else if(act==='toggleSettle'){ui.settleOpen[id]=!ui.settleOpen[id];var v2=$('#view'),t2=v2.scrollTop;v2.innerHTML=viewSettle();v2.scrollTop=t2;}
+    else if(act==='detail'){orderDetail(id);}
+    else if(act==='delOrder'){deleteOrderFn(id);}
+    else if(act==='do'){openActionForm(el.dataset.do,id||null);}
+    else if(act==='proxyReview'){reviewProxy(id,el.dataset.ok==='1');}
+    else if(act==='handleEx'){handleException(id);}
+    else if(act==='editUser'){
+      var eu=user(id);
+      assert(eu&&eu.id,'未找到该人员');
+      var builtIn=(eu.id==='A01');
+      openForm('✏️ 修改人员 · '+eu.id,[
+        {name:'name',label:'姓名',value:eu.name,required:true,ph:'请输入姓名'},
+        builtIn
+          ? {type:'info',value:'内置管理员 <b>'+esc(eu.name)+'</b>：角色固定为管理员，仅可改姓名。'}
+          : {name:'role',label:'角色',type:'select',value:eu.role,options:[{v:'embroiderer',t:'绣娘'},{v:'tracker',t:'跟单员'},{v:'admin',t:'管理员'}],required:true},
+        {type:'info',value:'修改会立即生效：新姓名出现在派单下拉、留痕记录；改角色后请到对应角色视角查看。'}
+      ],function(d){
+        var nm=String(d.name||'').trim();assert(nm,'请填写姓名');
+        var nr=builtIn?'admin':d.role;
+        assert(['embroiderer','tracker','admin'].indexOf(nr)>=0,'请选择正确角色');
+        var oldRole=eu.role;
+        if(oldRole!==nr){
+          var tip='确认将「'+eu.name+'」的角色从 '+ROLE_NAME[oldRole]+' 改为 '+ROLE_NAME[nr]+'？\n\n该人员已有的订单归属、代操作与付款记录都会保留，但派单下拉和身份视角将按新角色变化。';
+          if(!confirm(tip))return false;
+        }
+        eu.name=nm;eu.role=nr;
+        if(oldRole==='embroiderer'&&nr!=='embroiderer'&&db.settings.embroidererId===id){var f=db.users.find(function(x){return x.role==='embroiderer';});db.settings.embroidererId=f?f.id:'';}
+        if(oldRole==='tracker'&&nr!=='tracker'&&db.settings.trackerId===id){var g=db.users.find(function(x){return x.role==='tracker';});db.settings.trackerId=g?g.id:'';}
+        addLog('人员管理','','修改'+ROLE_NAME[nr]+' '+nm+'（'+id+'）'+(oldRole!==nr?'，角色 '+ROLE_NAME[oldRole]+' → '+ROLE_NAME[nr]:''));save();render();toast('已保存修改：'+nm);
+      },'保存修改');
+    }
+    else if(act==='delUser'){
+      var du=user(id);
+      assert(du&&du.id,'未找到该人员');
+      assert(du.id!=='A01','内置管理员不可删除');
+      var refCnt=db.orders.filter(function(x){return x.assignedTo===id;}).length+db.proxyOps.filter(function(p){return p.belongTo===id;}).length+(db.payments||[]).filter(function(p){return p.embroidererId===id;}).length;
+      var tip='确定删除 '+du.name+'（'+ROLE_NAME[du.role]+'）？此操作不可恢复。';
+      if(refCnt)tip+='\n\n注意：该人员关联 '+refCnt+' 条业务记录，删除后相关记录仍保留，但归属会显示为「未指派」。';
+      if(confirm(tip)){
+        db.users=db.users.filter(function(x){return x.id!==id;});
+        if(db.settings.embroidererId===id){var f=db.users.find(function(x){return x.role==='embroiderer';});db.settings.embroidererId=f?f.id:'';}
+        if(db.settings.trackerId===id){var g=db.users.find(function(x){return x.role==='tracker';});db.settings.trackerId=g?g.id:'';}
+        addLog('人员管理','','删除'+ROLE_NAME[du.role]+' '+du.name+(refCnt?'（关联 '+refCnt+' 条记录，已保留）':''));save();render();toast('已删除 '+du.name);
+      }
+    }
+    else if(act==='sendScanInput'){
+      var sv=($('#sendScanInput')&&$('#sendScanInput').value||'').trim();
+      var so=sv?db.orders.find(function(x){return x.id.toLowerCase()===sv.toLowerCase()||x.title.indexOf(sv)>=0;}):null;
+      assert(so,'未找到该单号，请检查输入');assert(so.status==='assigned'||so.status==='accepted','该单当前状态为「'+STATUS[so.status].t+'」，不在待放料环节');
+      openActionForm('scanSend',so.id);
+    }
+    else if(act==='sendScanAuto'){
+      var so2=db.orders.find(function(x){return x.status==='assigned'||x.status==='accepted';});
+      assert(so2,'暂无待放料绣品');openActionForm('scanSend',so2.id);
+    }
+    else if(act==='scanInput'){
+      var v=($('#scanInput')&&$('#scanInput').value||'').trim();
+      var o=v?db.orders.find(function(x){return x.id.toLowerCase()===v.toLowerCase()||x.title.indexOf(v)>=0;}):db.orders.find(function(x){return x.status==='material_sent';});
+      assert(o,'未找到该单号，请检查输入');assert(o.status==='material_sent','该单当前状态为「'+STATUS[o.status].t+'」，不在待收料环节');
+      openActionForm('scanReceive',o.id);
+    }
+    else if(act==='scanAuto'){
+      var o2=db.orders.find(function(x){return x.status==='material_sent';});
+      assert(o2,'暂无待收料绣品');openActionForm('scanReceive',o2.id);
+    }
+    else if(act==='exportData'){
+      var blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);a.download='绣坊协同数据备份_'+dtLocal(new Date()).replace(/[:T]/g,'-')+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+      addLog('数据导出','','导出本地 JSON 备份');save();toast('已导出本地数据备份');
+    }
+    else if(act==='importData'){$('#importFile').click();}
+    else if(act==='resetData'){
+      if(confirm('确定恢复为演示数据？当前浏览器内的全部订单、照片、留痕将被清空且不可恢复。')){db=seed();save();ui.tab='home';$('#view').scrollTop=0;render();toast('已恢复演示数据');}
+    }
+    else if(act==='clearData'){
+      if(confirm('确定清空演示数据？将删除全部订单、留痕、异常、代操作、照片和付款记录；人员与身份设置保留。此操作不可恢复，建议先导出备份。')){
+        db=emptyData();save();ui.tab='home';$('#view').scrollTop=0;render();toast('演示数据已清空，可以开始录入真实数据');
+      }
+    }
+  }catch(err){toast(err.message||'操作未成功','err');}
+});
+document.addEventListener('submit',function(e){
+  if(e.target.id!=='sheetForm')return;
+  e.preventDefault();
+  var form=e.target;
+  if(!sheetState.onSubmit){closeSheet();return;}
+  var fd=new FormData(form),d={};fd.forEach(function(v,k){d[k]=typeof v==='string'?v.trim():v;});
+  // 显式校验，绝不静默拦截
+  var req=sheetState.required||[];
+  for(var i=0;i<req.length;i++){
+    var v=d[req[i].name];
+    var empty=(v==null)||(typeof v==='string'&&!v.trim())||(typeof v==='object'&&v.size===0);
+    if(empty){
+      var el=form.querySelector('[name="'+req[i].name+'"]');
+      var isSel=el&&el.tagName==='SELECT';
+      if(el){el.classList.add('invalid');try{el.focus({preventScroll:true});el.scrollIntoView({block:'center',behavior:'smooth'});}catch(er){el.focus();}}
+      toast((isSel?'请选择「':'请填写「')+req[i].label+'」后再提交','err');return;
+    }
+  }
+  try{var r=sheetState.onSubmit(d);if(r!==false)closeSheet();}
+  catch(err){toast(err.message||'提交失败：'+(err&&err.name||'未知原因'),'err');}
+});
+document.addEventListener('change',function(e){
+  var f=e.target.dataset.filter;
+  if(f==='identity'){
+    if(db.settings.role==='tracker')db.settings.trackerId=e.target.value;else db.settings.embroidererId=e.target.value;
+    save();render();toast('当前身份已切换为 '+actor().name);return;
+  }
+  if(f==='adminFilter'){ui.adminFilter=e.target.value;render();return;}
+  if(f==='logRole'||f==='logOrder'){ui[f]=e.target.value;var l=$('#logList');if(l)l.innerHTML=logListHtml();return;}
+  if(sheetState.onChange)sheetState.onChange(e.target.name,e.target.value,e.target);
+});
+document.addEventListener('input',function(e){
+  if(e.target.classList&&e.target.classList.contains('invalid')&&e.target.value)e.target.classList.remove('invalid');
+  if(e.target.dataset.filter==='logQuery'){ui.logQuery=e.target.value;var l=$('#logList');if(l)l.innerHTML=logListHtml();}
+});
+document.addEventListener('change',function(e){
+  if(e.target.classList&&e.target.classList.contains('invalid')&&e.target.value)e.target.classList.remove('invalid');
+  if(e.target.id==='importFile'&&e.target.files&&e.target.files[0]){
+    var file=e.target.files[0];e.target.value='';
+    var fr=new FileReader();
+    fr.onload=function(){
+      try{
+        var d=JSON.parse(fr.result);
+        assert(d&&d.orders&&Array.isArray(d.orders),'备份文件格式不正确');
+        if(!confirm('导入将覆盖当前浏览器里的所有数据，确定继续？'))return;
+        d.seq=d.seq||{all:0,order:1};d.settings=d.settings||{role:'admin',trackerId:'T01',embroidererId:'E01'};
+        d.users=d.users||[];d.logs=d.logs||[];d.exceptions=d.exceptions||[];d.proxyOps=d.proxyOps||[];d.photos=d.photos||[];d.payments=d.payments||[];
+        d.orders.forEach(function(o){o.history=o.history||[];o.qcRecords=o.qcRecords||[];o.pendingProxy=o.pendingProxy||[];});
+        db=d;save();ui.tab=TABS[db.settings.role]?TABS[db.settings.role][0][0]:'home';render();
+        toast('导入成功：共 '+db.orders.length+' 单');
+      }catch(err){toast('导入失败：'+(err&&err.message||'文件无法解析'),'err');}
+    };
+    fr.readAsText(file);
+  }
+});
+setInterval(function(){
+  document.querySelectorAll('[data-cd]').forEach(function(el){var c=cd(el.dataset.cd);el.textContent=c.text;el.className='cd '+c.level;});
+  var t=$('#clock');if(t){var d=new Date();t.textContent=pad(d.getHours())+':'+pad(d.getMinutes());}
+},1000);
+
+/* ============================ 启动 ============================ */
+db=load()||seed();
+try{
+  if(localStorage.getItem('xiufang_reset_seed')==='1'){
+    db=seed();save();localStorage.removeItem('xiufang_reset_seed');
+    setTimeout(function(){toast('已恢复出厂演示数据');},300);
+  }
+}catch(e){}
+if(!db.settings)db.settings={role:'admin',trackerId:'T01',embroidererId:'E01'};
+ui.tab=TABS[db.settings.role]?TABS[db.settings.role][0][0]:'home';
+save();render();
+(function(){var d=new Date();$('#clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes());})();
+})();
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+</script>
+</body>
+</html>
